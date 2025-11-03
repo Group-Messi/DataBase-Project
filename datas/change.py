@@ -17,6 +17,7 @@ cols = ['game_id', 'home_club_id', 'away_club_id', 'date', 'home_club_goals', 'a
 new_df = df[cols]
 
 
+
 new_df.to_csv('games2.csv', index=False)
 
 
