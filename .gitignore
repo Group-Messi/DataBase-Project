@@ -1,1 +1,11 @@
+# Python Virtual Environment
+venv/
+# Bytecode files
+*.pyc
+__pycache__/
+
+
+# Database and configuration files
+.env
+config.py # or any file with database credentials
 datas/*2.csv
