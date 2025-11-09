@@ -103,3 +103,15 @@ GitHub’daki repoda var olan başka bir branch’te çalışmaya için öncelik
 
 `git branch -r` ile GitHub reposunda bulunan bütün branch’leri görebilirsiniz. Sadece `git branch` yazarsanız da lokal branch’ler listelenir
 
+
+### 10- Virtual Environment Kullanma 
+Windows: venv\Scripts\activate
+Mac: source venv/bin/activate
+
+Bu komutu yazınca proje o sanal ortamla çalışmaya başlıyor.
+
+Sonra şu komutu çalıştırın:
+pip install -r requirements.txt
+Bu, hepimize aynı kütüphaneleri kuracak.
+
+Bilgisayarı kapatıp açınca tekrar projede çalışacaksanız, venv’i yeniden aktifleştirmeniz gerekiyor. Komut yine aynı.
