@@ -2,9 +2,9 @@
 -- Database Schema for Transfermarkt Dataset
 -- ========================================
 
--- Drop tables if they already exist (for re-creation)
+-- Drop tables if they already exist (Order matters due to foreign keys)
 DROP TABLE IF EXISTS players;
- 
+DROP TABLE IF EXISTS clubs;
 DROP TABLE IF EXISTS competitions;
 
 -- ======================
@@ -21,6 +21,39 @@ CREATE TABLE competitions (
     url TEXT,
     is_major_national_league BOOLEAN
 );
+
+-- ======================
+-- Table: clubs
+-- ======================
+CREATE TABLE clubs (
+    club_id INT PRIMARY KEY,
+    club_code VARCHAR(100),
+    name VARCHAR(150),
+    domestic_competition_id VARCHAR(10),
+    total_market_value FLOAT, -- Data temizlenince float olacak
+    squad_size INT,
+    average_age FLOAT,
+    foreigners_number INT,
+    foreigners_percentage FLOAT,
+    national_team_players INT,
+    stadium_name VARCHAR(150),
+    stadium_seats INT,
+    net_transfer_record VARCHAR(50), -- "+€3.05m" formatında geldiği için String tutuyoruz
+    coach_name VARCHAR(100),
+    last_season INT,
+    filename TEXT,
+    url TEXT,
+    
+    -- Foreign keys
+    FOREIGN KEY (domestic_competition_id) 
+        REFERENCES competitions(competition_id) 
+        ON UPDATE CASCADE 
+        ON DELETE SET NULL
+);
+
+-- ======================
+-- Table: players
+-- ======================
 CREATE TABLE players ( 
     player_id INT PRIMARY KEY,
     first_name VARCHAR(100),
