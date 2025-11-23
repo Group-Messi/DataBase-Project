@@ -8,5 +8,16 @@ def home_page():
     
     return render_template("main.html", title=proje_adi)
 
+
+@app.route("/health")
+def health():
+    """Health check endpoint for quick verification.
+
+    Returns:
+        tuple: (body, status_code)  -> ("OK", 200)
+    """
+    return "OK", 200
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
