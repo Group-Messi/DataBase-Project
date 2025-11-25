@@ -1,30 +1,43 @@
 import pandas as pd
 from sqlalchemy import create_engine
+import os                       # Ortam değişkenlerini okumak için
+from dotenv import load_dotenv  # .env dosyasını yüklemek için
 
-# 1. MySQL Bağlantısını Kuruyoruz
-# FORMAT: mysql+pymysql://KULLANICI:SIFRE@HOST/VERITABANI
-# Buraya kendi şifreni yaz!
-db_connection_str = 'mysql+pymysql://root:adanaMERKEZ@localhost/football_db'
+# 1. .env Dosyasını Yüklüyoruz
+load_dotenv() 
+
+# 2. MySQL Bağlantısını Kuruyoruz (.env'den okuyarak)
+# Bağlantı dizesini dinamik oluşturuyoruz
+db_connection_str = "mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(
+    user=os.environ.get('MYSQL_USER'),
+    password=os.environ.get('MYSQL_PASSWORD'),
+    host=os.environ.get('MYSQL_HOST'),
+    port=os.environ.get('MYSQL_PORT'),
+    db=os.environ.get('MYSQL_DATABASE')
+)
+
 db_connection = create_engine(db_connection_str)
 
 try:
-    # 2. CSV dosyasını Pandas ile okuyoruz
-    # encoding='utf-8' diyerek Türkçe karakter sorununu baştan çözüyoruz
-    # Bazen dosya 'latin1' olabilir, hata alırsan burayı değiştiririz ama genelde utf-8'dir.
+    print("⏳ Dosya okunuyor...")
+    # 3. CSV dosyasını Pandas ile okuyoruz
+    # 'datas/clubs.csv' dosyasının projenin ana dizinindeki 'datas' klasöründe olduğundan emin ol!
     df = pd.read_csv('datas/clubs.csv', encoding='utf-8')
     
-    # 3. Veriyi temizleyelim (Veritabanındaki tabloyla uyuşmayan sütun varsa diye)
-    # Tablonda olmayan sütunlar varsa Pandas hata verebilir, o yüzden sadece gerekli olanları seçebilirsin.
-    # Şimdilik direkt atmayı deneyelim, Pandas akıllıdır.
+    # İsteğe Bağlı: Sütun isimlerini veritabanıyla eşleşecek şekilde temizleyebilirsin
+    # Örn: df.columns = [c.lower() for c in df.columns] 
     
+    print(f"📄 {len(df)} satır veri okundu. Veritabanına yazılıyor...")
+
     # 4. Veritabanına Yüklüyoruz
-    # if_exists='append': Tablo zaten var, verileri içine ekle demek.
-    # index=False: Pandas'ın kendi index numaralarını veritabanına yazma demek.
+    # if_exists='append': Var olan tablonun altına ekle
+    # index=False: Pandas indexlerini yazma
     df.to_sql('clubs', con=db_connection, if_exists='append', index=False)
     
-    print("✅ BAŞARILI: 'clubs' tablosu veritabanına yüklendi!")
-    print(f"Toplam {len(df)} satır eklendi.")
+    print("✅ BAŞARILI: 'clubs.csv' verileri 'clubs' tablosuna yüklendi!")
 
 except Exception as e:
     print("❌ BİR HATA OLUŞTU:")
     print(e)
+    print("\n💡 İPUCU: Eğer 'Foreign key constraint fails' hatası alıyorsan,")
+    print("önce 'competitions' (ligler) tablosunu yüklemen gerekebilir.")
