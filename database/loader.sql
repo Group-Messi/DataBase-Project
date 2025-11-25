@@ -92,9 +92,9 @@ CREATE TABLE players (
 CREATE TABLE transfers (
     transfer_id INT PRIMARY KEY,
     player_id INT,
+    transfer_date DATE,
     from_club_id INT,
     to_club_id INT,
-    transfer_date DATE,
     transfer_season VARCHAR(10),
     player_name VARCHAR(255),
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON UPDATE CASCADE ON DELETE RESTRICT,
