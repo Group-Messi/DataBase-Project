@@ -1,11 +1,23 @@
 from flask import Flask, render_template_string, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+import os                   # Ortam değişkenlerini okumak için
+from dotenv import load_dotenv  # .env dosyasını yüklemek için
 
+# --- .ENV YÜKLEME ---
+load_dotenv() # .env dosyasını otomatik olarak yüklüyor
 app = Flask(__name__)
 
 # --- VERİTABANI AYARLARI ---
-# Kendi şifreni buraya yaz:
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:YOUR_PASSWORD_HERE@localhost/football_db'
+# Bağlantı bilgilerini .env dosyasından çekiyoruz:
+DATABASE_URL = "mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(
+    user=os.environ.get('MYSQL_USER'),
+    password=os.environ.get('MYSQL_PASSWORD'),
+    host=os.environ.get('MYSQL_HOST'),
+    port=os.environ.get('MYSQL_PORT'),
+    db=os.environ.get('MYSQL_DATABASE')
+)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -149,6 +161,7 @@ def index():
             # Sayfayı yenile (GET isteği yap)
             return redirect(url_for('index'))
         except Exception as e:
+            # Hata mesajını daha anlaşılır hale getirelim
             return f"<h1>Kayıt Hatası:</h1><p>{e}</p>"
 
     # GET İsteği: Verileri Listele
@@ -158,4 +171,6 @@ def index():
     return render_template_string(HTML_TEMPLATE, games=games)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    # Eğer .env'de port tanımlıysa onu kullan, yoksa 5001 kullan
+    port = int(os.environ.get('PORT', 5001)) 
+    app.run(debug=True, port=port)
