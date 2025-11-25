@@ -1,0 +1,130 @@
+:root {
+    /* RENK PALETİ */
+  --bg-vapor:       #FAFAFA;  /* Main Background */
+  --bg-card:        #FFFFFF;  /* Card / Table Row Background */
+  --border-mist:    #E4E4E7;  /* Borders */
+  --text-secondary: #71717A;  /* Metadata / Labels */
+  --text-primary:   #18181B;  /* Headers / Scores */
+}
+
+/* FONT : NUNITO */
+
+/* --- 2. GLOBAL RESET --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-vapor);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    
+    /* Layout: Pushes footer to bottom */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+ul {
+    list-style: none;
+}
+
+/* --- 3. UTILITIES --- */
+.container {
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* --- 4. NAVBAR --- */
+.navbar {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-mist);
+    height: var(--nav-height);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 2%;
+    display: flex;
+    align-items: center;
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-weight: 900;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.logo img {
+    height: 4rem;        /* change this to fit your header (e.g. 32px, 48px) */
+    width: auto;
+    display: block;
+    object-fit: contain;
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-link {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    display: inline-block;
+    
+    /* Added text-shadow to the transition list for smoothness */
+    transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+    
+    /* The Scale */
+    transform: scale(1.1);
+    
+    /* The Underline */
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    text-decoration-thickness: 1px;
+    
+    /* The Shadow: Horizontal | Vertical | Blur | Color (with transparency) */
+    text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 5. MAIN CONTENT --- */
+.main-content {
+    flex: 1; /* Consumes remaining space */
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+/* --- 6. FOOTER --- */
+.footer {
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-mist);
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-top: auto;
+}
