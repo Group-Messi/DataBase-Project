@@ -1,3 +1,7 @@
+CREATE DATABASE football_db;
+USE football_db;  -- <--- İŞTE BU SATIR ÇOK ÖNEMLİ!
+
+-- Önce temizlik yapıyoruz
 DROP TABLE IF EXISTS club_games;
 DROP TABLE IF EXISTS games;
 DROP TABLE IF EXISTS transfers;
@@ -5,6 +9,7 @@ DROP TABLE IF EXISTS players;
 DROP TABLE IF EXISTS clubs;
 DROP TABLE IF EXISTS competitions;
 
+-- Şimdi tabloları oluşturuyoruz
 CREATE TABLE competitions (
     competition_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
@@ -35,11 +40,7 @@ CREATE TABLE clubs (
     last_season INT,
     filename TEXT,
     url TEXT,
-    
-    FOREIGN KEY (domestic_competition_id) 
-        REFERENCES competitions(competition_id) 
-        ON UPDATE CASCADE 
-        ON DELETE SET NULL
+    FOREIGN KEY (domestic_competition_id) REFERENCES competitions(competition_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE players ( 
@@ -65,15 +66,8 @@ CREATE TABLE players (
     current_club_name VARCHAR(150),
     market_value_in_eur FLOAT,
     highest_market_value_in_eur FLOAT,
-
-    FOREIGN KEY (current_club_domestic_competition_id)
-        REFERENCES competitions(competition_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL,
-    FOREIGN KEY (current_club_id)
-        REFERENCES clubs(club_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL
+    FOREIGN KEY (current_club_domestic_competition_id) REFERENCES competitions(competition_id) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (current_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS transfers (
@@ -84,22 +78,9 @@ CREATE TABLE IF NOT EXISTS transfers (
     transfer_date DATE, 
     transfer_season VARCHAR(10), 
     player_name VARCHAR(255) NOT NULL,
-    
-    FOREIGN KEY (player_id) 
-        REFERENCES players(player_id)
-        ON UPDATE CASCADE             
-        ON DELETE RESTRICT,           
-    
-    FOREIGN KEY (from_club_id)
-        REFERENCES clubs(club_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL,           
-        
-    FOREIGN KEY (to_club_id)
-        REFERENCES clubs(club_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL
-        
+    FOREIGN KEY (player_id) REFERENCES players(player_id) ON UPDATE CASCADE ON DELETE RESTRICT,            
+    FOREIGN KEY (from_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL,            
+    FOREIGN KEY (to_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE club_games (
@@ -108,7 +89,6 @@ CREATE TABLE club_games (
     hosting VARCHAR(10), 
     opponent_goals INT,
     own_goals INT,
-    
     FOREIGN KEY (club_id) REFERENCES clubs(club_id)
 );
 
@@ -119,10 +99,7 @@ CREATE TABLE games (
     game_date DATE NOT NULL,
     home_club_goals SMALLINT DEFAULT 0,
     away_club_goals SMALLINT DEFAULT 0,
-
     PRIMARY KEY(game_id),
-    FOREIGN KEY(home_club_id)
-        REFERENCES clubs(club_id),
-    FOREIGN KEY(away_club_id)
-        REFERENCES clubs(club_id)
+    FOREIGN KEY(home_club_id) REFERENCES clubs(club_id),
+    FOREIGN KEY(away_club_id) REFERENCES clubs(club_id)
 );
