@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furkan Kalay</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: 'Nunito', system-ui, Arial, sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container nav-content">
+            <a href="/" class="logo">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="SCOUT.DB logo">
+                Messibase
+            </a>
+            <ul class="nav-links">
+                <li><a href="/games" class="nav-link">Games</a></li>
+                <li><a href="/players" class="nav-link">Players</a></li>
+                <li><a href="/clubs" class="nav-link">Clubs</a></li>
+                <li><a href="/transfers" class="nav-link">Transfers</a></li>
+                <li><a href="/games" class="nav-link">Matches</a></li>
+                <li><a href="/competitions" class="nav-link">Competitions</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Group Messi - All rights reserved</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
