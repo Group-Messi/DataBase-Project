@@ -140,6 +140,6 @@ LOAD DATA LOCAL INFILE 'datas/games.csv' INTO TABLE games FIELDS TERMINATED BY '
 -- ÇALIŞTIRMA
 -- 1 - CMD AÇIN
 -- 2 - projenin root folder'ına geçin (örn: cd "C:\users\alperen\desktop\databaseprojesi")
--- 3 - mysql client çalıştırın ( mysql -u -root -p --local-infile=1 )
+-- 3 - mysql client çalıştırın ( mysql -u -root -p --local-infile=1 ) (mysql --local-infile=1 -u root -pŞİFRENİBURAYAGİR)
 -- 3.not (şifreniz genelde 'root' olur)
 -- 4 - bu sql scriptini çalıştırın ( SOURCE database/loader.sql; )
