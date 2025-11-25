@@ -1,3 +1,4 @@
+CREATE DATABASE football_db;
 USE football_db;  -- <--- İŞTE BU SATIR ÇOK ÖNEMLİ!
 
 -- Önce temizlik yapıyoruz
