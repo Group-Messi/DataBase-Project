@@ -62,6 +62,13 @@ def games():
             return f"<h1>Kayıt Hatası:</h1><p>{e}</p>"
 
     # GET İsteği: Listeleme
+    # Önce kulüp listesini çekelim ki formda dropdown olarak gösterelim
+    clubs_sql = """
+        SELECT club_id, name
+        FROM clubs
+        ORDER BY name ASC
+    """
+
     select_sql = """
         SELECT cg.game_id,
                cg.club_id,
@@ -76,15 +83,20 @@ def games():
     """
     
     games_data = []
+    clubs_data = []
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
+                # Kulüpleri çek
+                cursor.execute(clubs_sql)
+                clubs_data = cursor.fetchall()
+                # Maçları çek
                 cursor.execute(select_sql)
                 games_data = cursor.fetchall()
     except Exception as e:
         return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
-    return render_template('games.html', games=games_data)
+    return render_template('games.html', games=games_data, clubs=clubs_data)
 
 # 2. DELETE (Silme İşlemi)
 @app.route('/games/delete/<int:game_id>', methods=['POST'])

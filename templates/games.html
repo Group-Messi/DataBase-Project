@@ -18,9 +18,16 @@
                 <input type="number" name="game_id" required placeholder="Örn: 1001" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
             </div>
 
-            <div style="flex: 1; min-width: 120px;">
-                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Club ID</label>
-                <input type="number" name="club_id" required placeholder="Örn: 5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Kulüp</label>
+                <select name="club_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="" disabled selected>Kulüp seçin...</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">
+                            {{ club.name }} (ID: {{ club.club_id }})
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
 
             <div style="flex: 1; min-width: 120px;">
