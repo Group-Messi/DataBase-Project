@@ -1,6 +1,349 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Transfer — Placeholder</h1>
-<p>This content appears inside the layout's main-content area.</p>
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <div style="margin-bottom: 2rem; border-bottom: 2px solid #8e44ad; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: #2c3e50; margin: 0;">🔁 Transfer Yönetimi</h1>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #2c3e50;">➕ Yeni Transfer Kaydı</h3>
+        <form action="{{ url_for('transfers') }}" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            <div style="flex: 1; min-width: 120px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Transfer ID</label>
+                <input type="number" name="transfer_id" required placeholder="Örn: 50001" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 1.2; min-width: 200px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Oyuncu</label>
+                <input type="number"
+                       id="player_id_input"
+                       name="player_id"
+                       list="player-options"
+                       placeholder="Oyuncu ID girin"
+                       required
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                       oninput="updatePlayerNameById(this.value, 'player_name_input')">
+                <datalist id="player-options">
+                    {% for player in players %}
+                        <option value="{{ player.player_id }}" label="{{ player.name }} (ID: {{ player.player_id }})"></option>
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <div style="flex: 1; min-width: 160px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Oyuncu Adı</label>
+                <input type="text" id="player_name_input" name="player_name" placeholder="Transfer kaydındaki isim" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" readonly>
+            </div>
+
+            <div style="flex: 1; min-width: 150px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Transfer Tarihi</label>
+                <input type="date" name="transfer_date" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 0.8; min-width: 120px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Sezon</label>
+                <input type="text" name="transfer_season" placeholder="26/27" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Gönderen Kulüp</label>
+                <select name="from_club_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Kulüp seçin...</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">{{ club.name }} (ID: {{ club.club_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Alan Kulüp</label>
+                <select name="to_club_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Kulüp seçin...</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">{{ club.name }} (ID: {{ club.club_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Kaydet
+            </button>
+        </form>
+        <p style="margin-top: 10px; font-size: 0.85em; color: #7f8c8d;">Not: Oyuncu listesinden sadece ilk 200 sonuç gösterilir. Gerekirse ID alanına manuel giriş yapabilirsiniz.</p>
+    </div>
+
+    <div class="table-container">
+        <h2 style="color: #34495e; margin-bottom: 1rem;">📋 Son Transferler</h2>
+        {% if transfers|length == 0 %}
+            <p style="text-align: center; color: gray;">Henüz transfer kaydı bulunamadı.</p>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Oyuncu</th>
+                        <th>Tarih</th>
+                        <th>Kulüpler</th>
+                        <th>Sezon</th>
+                        <th style="text-align: right;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transfer in transfers %}
+                    <tr>
+                        <td>{{ transfer.transfer_id }}</td>
+                        <td>
+                            <strong>{{ transfer.player_full_name or transfer.player_name }}</strong>
+                            <div style="font-size: 0.85em; color: #7f8c8d;">ID: {{ transfer.player_id }}</div>
+                        </td>
+                        <td>{{ transfer.transfer_date }}</td>
+                        <td>
+                            <div style="font-size: 0.9em;">
+                                <span style="color: #c0392b;">{{ transfer.from_club_name or ('ID: ' ~ transfer.from_club_id)|safe }}</span>
+                                <span style="margin: 0 6px;">→</span>
+                                <span style="color: #27ae60;">{{ transfer.to_club_name or ('ID: ' ~ transfer.to_club_id)|safe }}</span>
+                            </div>
+                        </td>
+                        <td>{{ transfer.transfer_season }}</td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <button
+                                onclick="openTransferModal(
+                                    '{{ transfer.transfer_id }}',
+                                    '{{ transfer.player_id }}',
+                                    '{{ transfer.player_full_name or transfer.player_name }}',
+                                    '{{ transfer.transfer_date }}',
+                                    '{{ transfer.from_club_id }}',
+                                    '{{ transfer.to_club_id }}',
+                                    '{{ transfer.transfer_season }}'
+                                )"
+                                style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                Düzenle
+                            </button>
+
+                            <form action="{{ url_for('delete_transfer', transfer_id=transfer.transfer_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bu transfer kaydını silmek istediğinize emin misiniz? (ID: {{ transfer.transfer_id }})');">
+                                <button type="submit" style="background-color: #c0392b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+                                    Sil
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+<div id="transferModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #2c3e50;">Transferi Düzenle</h2>
+            <span onclick="closeTransferModal()" style="cursor: pointer; font-size: 24px; font-weight: bold; color: #aaa;">&times;</span>
+        </div>
+
+        <form action="{{ url_for('update_transfer') }}" method="POST">
+            <input type="hidden" id="modal_transfer_id" name="transfer_id">
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Transfer ID:</label>
+                <input type="text" id="modal_transfer_id_display" disabled style="width: 100%; padding: 8px; background: #eee; border: 1px solid #ddd;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Oyuncu</label>
+                <input type="number"
+                       id="modal_player_id_input"
+                       name="player_id"
+                       list="player-options"
+                       required
+                       style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+                       oninput="updatePlayerNameById(this.value, 'modal_player_name')">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Oyuncu Adı</label>
+                <input type="text" id="modal_player_name" name="player_name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" readonly>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Transfer Tarihi:</label>
+                <input type="date" id="modal_transfer_date" name="transfer_date" style="width: 100%; padding: 8px; border: 1px solid #ddd;" required>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 5px;">Gönderen Kulüp ID:</label>
+                    <input type="number" id="modal_from_club_id" name="from_club_id" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 5px;">Alan Kulüp ID:</label>
+                    <input type="number" id="modal_to_club_id" name="to_club_id" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Sezon:</label>
+                <input type="text" id="modal_transfer_season" name="transfer_season" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+
+            <div style="text-align: right;">
+                <button type="button" onclick="closeTransferModal()" style="padding: 8px 16px; background: #95a5a6; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">İptal</button>
+                <button type="submit" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script type="application/json" id="player-data-json">
+    {{ players | tojson | safe }}
+</script>
+
+<script>
+    var PLAYER_LOOKUP = [];
+    (function initializePlayerLookup() {
+        var dataElement = document.getElementById('player-data-json');
+        if (!dataElement) {
+            return;
+        }
+        try {
+            var raw = dataElement.textContent || '[]';
+            PLAYER_LOOKUP = JSON.parse(raw);
+        } catch (err) {
+            console.error('Oyuncu verisi çözülemedi', err);
+            PLAYER_LOOKUP = [];
+        }
+    })();
+    var PLAYER_LOOKUP_MAP = {};
+    PLAYER_LOOKUP.forEach(function(player) {
+        if (player && player.player_id != null) {
+            PLAYER_LOOKUP_MAP[String(player.player_id)] = player.name || '';
+        }
+    });
+
+    function ensureDatalistOption(idKey, playerName) {
+        var datalist = document.getElementById('player-options');
+        if (!datalist || !idKey) {
+            return;
+        }
+        var exists = Array.prototype.slice.call(datalist.options || []).some(function(option) {
+            return option.value === idKey;
+        });
+        if (!exists) {
+            var option = document.createElement('option');
+            var safeName = playerName && playerName !== 'None' ? playerName : 'Bilinmeyen Oyuncu';
+            option.value = idKey;
+            option.label = safeName + ' (ID: ' + idKey + ')';
+            datalist.appendChild(option);
+        }
+    }
+
+    function ensurePlayerInLookup(playerId, playerName) {
+        var idKey = playerId != null ? String(playerId) : '';
+        if (!idKey) {
+            return;
+        }
+        if (!PLAYER_LOOKUP_MAP[idKey]) {
+            var safeName = playerName && playerName !== 'None' ? playerName : 'Bilinmeyen Oyuncu';
+            PLAYER_LOOKUP_MAP[idKey] = safeName;
+            ensureDatalistOption(idKey, safeName);
+        }
+    }
+
+    function fetchPlayerNameById(playerIdValue, onComplete) {
+        var key = playerIdValue && playerIdValue !== 'None' ? String(playerIdValue).trim() : '';
+        if (!key) {
+            if (typeof onComplete === 'function') {
+                onComplete('', '');
+            }
+            return;
+        }
+        if (PLAYER_LOOKUP_MAP[key]) {
+            if (typeof onComplete === 'function') {
+                onComplete(PLAYER_LOOKUP_MAP[key], key);
+            }
+            return;
+        }
+        fetch('/api/player/' + encodeURIComponent(key))
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Oyuncu bulunamadı');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                var name = data && data.name ? data.name : '';
+                if (name) {
+                    PLAYER_LOOKUP_MAP[key] = name;
+                    ensureDatalistOption(key, name);
+                }
+                if (typeof onComplete === 'function') {
+                    onComplete(name, key);
+                }
+            })
+            .catch(function() {
+                if (typeof onComplete === 'function') {
+                    onComplete('', key);
+                }
+            });
+    }
+
+    function updatePlayerNameById(playerIdValue, targetInputId) {
+        var target = document.getElementById(targetInputId);
+        if (!target) {
+            return;
+        }
+        var key = playerIdValue && playerIdValue !== 'None' ? String(playerIdValue).trim() : '';
+        if (!key) {
+            target.value = '';
+            target.dataset.currentPlayerKey = '';
+            return;
+        }
+        target.dataset.currentPlayerKey = key;
+        if (PLAYER_LOOKUP_MAP[key]) {
+            target.value = PLAYER_LOOKUP_MAP[key];
+            ensureDatalistOption(key, PLAYER_LOOKUP_MAP[key]);
+            return;
+        }
+        fetchPlayerNameById(key, function(name, resolvedKey) {
+            if (!resolvedKey || target.dataset.currentPlayerKey !== resolvedKey) {
+                return;
+            }
+            target.value = name || '';
+        });
+    }
+
+    function openTransferModal(id, playerId, playerName, date, fromClub, toClub, season) {
+        var resolvedId = playerId != null && playerId !== 'None' ? String(playerId) : '';
+        var resolvedName = playerName && playerName !== 'None' ? playerName : '';
+        ensurePlayerInLookup(resolvedId, resolvedName);
+        document.getElementById('transferModal').style.display = 'block';
+        document.getElementById('modal_transfer_id').value = id;
+        document.getElementById('modal_transfer_id_display').value = id;
+        document.getElementById('modal_player_id_input').value = resolvedId;
+        updatePlayerNameById(resolvedId, 'modal_player_name');
+        document.getElementById('modal_transfer_date').value = date;
+        document.getElementById('modal_from_club_id').value = fromClub !== 'None' ? fromClub : '';
+        document.getElementById('modal_to_club_id').value = toClub !== 'None' ? toClub : '';
+        document.getElementById('modal_transfer_season').value = season;
+    }
+
+    function closeTransferModal() {
+        document.getElementById('transferModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        var modal = document.getElementById('transferModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+        var createPlayerInput = document.getElementById('player_id_input');
+        if (createPlayerInput) {
+            updatePlayerNameById(createPlayerInput.value, 'player_name_input');
+        }
+    });
+</script>
+
 {% endblock %}

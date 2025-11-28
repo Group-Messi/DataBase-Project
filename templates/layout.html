@@ -10,11 +10,45 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
+    <!-- Senin orijinal stil dosyan -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
     <style>
         body {
             font-family: 'Nunito', system-ui, Arial, sans-serif;
+            /* Arka plan rengini sildim, styles.css'den gelecek */
         }
+
+        /* --- SADECE TABLO STİLLERİ (BUNLARI TUTUYORUZ) --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white; /* Tablo içi beyaz kalsın, okunabilirlik için iyidir */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        th {
+            background-color: #34495e; /* Tablo başlığı rengi (Değiştirmek istersen burayı sil) */
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        /* HOVER EFEKTİ (Bunu istemiştin, tutuyoruz) */
+        tr:hover {
+            background-color: #f1f1f1; 
+            transition: background-color 0.2s;
+        }
+
+        /* Navbar ve Footer stillerini buradan TAMAMEN SİLDİM. 
+           Artık senin styles.css dosyan devrede olacak. */
     </style>
 </head>
 
@@ -23,7 +57,7 @@
     <nav class="navbar">
         <div class="container nav-content">
             <a href="/" class="logo">
-                <img src="{{ url_for('static', filename='images/logo.jpg') }}" alt="SCOUT.DB logo">
+                <img src="{{ url_for('static', filename='images/logo.jpg') }}" onerror="this.style.display='none'" alt="Logo">
                 Messibase
             </a>
             <ul class="nav-links">
@@ -31,7 +65,6 @@
                 <li><a href="/players" class="nav-link">Players</a></li>
                 <li><a href="/clubs" class="nav-link">Clubs</a></li>
                 <li><a href="/transfers" class="nav-link">Transfers</a></li>
-                <li><a href="/games" class="nav-link">Matches</a></li>
                 <li><a href="/competitions" class="nav-link">Competitions</a></li>
             </ul>
         </div>
