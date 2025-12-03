@@ -1,6 +1,185 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Players — Placeholder</h1>
-<p>This content appears inside the layout's main-content area.</p>
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    <div style="margin-bottom: 2rem; border-bottom: 2px solid #e67e22; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: #2c3e50; margin: 0;">🏃‍♂️ Player Yönetimi</h1>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #2c3e50;">➕ Yeni Oyuncu Ekle</h3>
+        
+        <form action="{{ url_for('players') }}" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            
+            <div style="flex: 1; min-width: 120px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Player ID</label>
+                <input type="number" name="player_id" required placeholder="Örn: 9999" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 2; min-width: 200px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">İsim Soyisim</label>
+                <input type="text" name="name" required placeholder="Messi" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 1; min-width: 150px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Pozisyon</label>
+                <input type="text" name="position" placeholder="Attack" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+            
+            <div style="flex: 1; min-width: 150px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Piyasa Değeri (€)</label>
+                <input type="number" step="0.01" name="market_value_in_eur" placeholder="1000000" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 2; min-width: 250px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Mevcut Kulüp</label>
+                <select name="current_club_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Kulüpsüz / Bilinmiyor</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">
+                            {{ club.name }} (ID: {{ club.club_id }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Kaydet
+            </button>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <h2 style="color: #34495e; margin-bottom: 1rem;">📋 Oyuncu Listesi (Son 100)</h2>
+        
+        {% if players|length == 0 %}
+            <p style="text-align: center; color: gray; padding: 20px; background: #fff; border: 1px solid #eee;">
+                Henüz kayıtlı oyuncu bulunamadı. Veritabanının dolu olduğundan emin olun.
+            </p>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>İsim</th>
+                        <th>Pozisyon</th>
+                        <th>Mevcut Kulüp</th>
+                        <th>Piyasa Değeri</th>
+                        <th style="text-align: right;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in players %}
+                    <tr>
+                        <td>{{ p.player_id }}</td>
+                        <td><strong>{{ p.name }}</strong></td>
+                        <td>{{ p.position }}</td>
+                        <td>
+                            {% if p.club_name %}
+                                <span style="color: #2980b9; font-weight: bold;">{{ p.club_name }}</span>
+                            {% else %}
+                                <span style="color: #95a5a6; font-style: italic;">Kulüpsüz</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if p.market_value_in_eur %}
+                                {{ "{:,.0f}".format(p.market_value_in_eur) }} €
+                            {% else %}
+                                0 €
+                            {% endif %}
+                        </td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <button onclick="openPlayerModal('{{ p.player_id }}', '{{ p.name }}', '{{ p.position }}', '{{ p.market_value_in_eur }}', '{{ p.current_club_id }}')" 
+                                    style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                Düzenle
+                            </button>
+                            
+                            <form action="{{ url_for('delete_player', player_id=p.player_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('{{ p.name }} isimli oyuncuyu silmek istediğine emin misin?');">
+                                <button type="submit" style="background-color: #c0392b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Sil</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+<div id="playerModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #2c3e50;">Oyuncuyu Düzenle</h2>
+            <span onclick="closePlayerModal()" style="cursor: pointer; font-size: 24px;">&times;</span>
+        </div>
+        
+        <form action="{{ url_for('update_player') }}" method="POST">
+            <input type="hidden" id="modal_player_id" name="player_id">
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Player ID (Değiştirilemez):</label>
+                <input type="text" id="modal_player_id_display" disabled style="width: 100%; padding: 8px; background: #eee; border: 1px solid #ddd;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">İsim:</label>
+                <input type="text" id="modal_name" name="name" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Pozisyon:</label>
+                <input type="text" id="modal_position" name="position" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Değer (€):</label>
+                <input type="number" step="0.01" id="modal_value" name="market_value_in_eur" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Mevcut Kulüp:</label>
+                <select id="modal_club" name="current_club_id" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                    <option value="">Kulüpsüz / Bilinmiyor</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">{{ club.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="text-align: right;">
+                <button type="button" onclick="closePlayerModal()" style="padding: 8px 16px; background: #95a5a6; color: white; border: none; border-radius: 4px; margin-right: 5px;">İptal</button>
+                <button type="submit" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px;">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Modalı açar ve verileri içine doldurur
+    function openPlayerModal(id, name, pos, val, clubId) {
+        document.getElementById('playerModal').style.display = 'block';
+        document.getElementById('modal_player_id').value = id;
+        document.getElementById('modal_player_id_display').value = id;
+        document.getElementById('modal_name').value = name;
+        document.getElementById('modal_position').value = (pos && pos !== 'None') ? pos : '';
+        document.getElementById('modal_value').value = (val && val !== 'None') ? val : '';
+        
+        // Kulüp seçimini ayarla
+        var clubSelect = document.getElementById('modal_club');
+        clubSelect.value = (clubId && clubId !== 'None') ? clubId : '';
+    }
+
+    // Modalı kapatır
+    function closePlayerModal() {
+        document.getElementById('playerModal').style.display = 'none';
+    }
+
+    // Modal dışına tıklayınca kapatma
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('playerModal')) {
+            closePlayerModal();
+        }
+    }
+</script>
 {% endblock %}
