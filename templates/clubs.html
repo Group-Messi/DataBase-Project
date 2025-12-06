@@ -1,6 +1,157 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Clubs — Placeholder</h1>
-<p>This content appears inside the layout's main-content area.</p>
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    <div style="margin-bottom: 2rem; border-bottom: 2px solid #1abc9c; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: #2c3e50; margin: 0;">🛡️ Club Yönetimi</h1>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #2c3e50;">➕ Yeni Kulüp Ekle</h3>
+        <form action="{{ url_for('clubs_route') }}" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            
+            <div style="flex: 1; min-width: 100px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Club ID</label>
+                <input type="number" name="club_id" required placeholder="101" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 2; min-width: 200px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Kulüp Adı</label>
+                <input type="text" name="name" required placeholder="Galatasaray" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 1.5; min-width: 150px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Stadyum</label>
+                <input type="text" name="stadium_name" placeholder="Rams Park" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 1; min-width: 120px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Toplam Değer</label>
+                <input type="number" step="0.01" name="total_market_value" placeholder="Milyon €" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 2; min-width: 200px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Lig (Competition)</label>
+                <select name="domestic_competition_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Seçiniz...</option>
+                    {% for comp in competitions %}
+                        <option value="{{ comp.competition_id }}">{{ comp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Kaydet
+            </button>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <h2 style="color: #34495e; margin-bottom: 1rem;">📋 Kulüp Listesi (Son 100)</h2>
+        {% if clubs|length == 0 %}
+            <p style="text-align: center; color: gray;">Henüz kayıt yok.</p>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kulüp</th>
+                        <th>Stadyum</th>
+                        <th>Lig</th>
+                        <th>Toplam Değer</th>
+                        <th style="text-align: right;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in clubs %}
+                    <tr>
+                        <td>{{ c.club_id }}</td>
+                        <td><strong>{{ c.name }}</strong></td>
+                        <td>{{ c.stadium_name }}</td>
+                        <td>
+                            {% if c.competition_name %}
+                                <span style="background: #eafaf1; color: #2ecc71; padding: 3px 8px; border-radius: 10px; font-size: 0.9em;">{{ c.competition_name }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ "{:,.2f}".format(c.total_market_value) if c.total_market_value else '0' }}</td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <button onclick="openClubModal('{{ c.club_id }}', '{{ c.name }}', '{{ c.stadium_name }}', '{{ c.total_market_value }}', '{{ c.domestic_competition_id }}')" 
+                                    style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                Düzenle
+                            </button>
+                            <form action="{{ url_for('delete_club', club_id=c.club_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Silinsin mi?');">
+                                <button type="submit" style="background-color: #c0392b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Sil</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+<div id="clubModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #2c3e50;">Kulübü Düzenle</h2>
+            <span onclick="closeClubModal()" style="cursor: pointer; font-size: 24px;">&times;</span>
+        </div>
+        <form action="{{ url_for('update_club') }}" method="POST">
+            <input type="hidden" id="modal_club_id" name="club_id">
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">İsim:</label>
+                <input type="text" id="modal_name" name="name" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Stadyum:</label>
+                <input type="text" id="modal_stadium" name="stadium_name" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Toplam Değer:</label>
+                <input type="number" step="0.01" id="modal_market" name="total_market_value" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Lig:</label>
+                <select id="modal_comp" name="domestic_competition_id" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                    <option value="">Seçiniz...</option>
+                    {% for comp in competitions %}
+                        <option value="{{ comp.competition_id }}">{{ comp.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="text-align: right;">
+                <button type="button" onclick="closeClubModal()" style="padding: 8px 16px; background: #95a5a6; color: white; border: none; border-radius: 4px; margin-right: 5px;">İptal</button>
+                <button type="submit" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px;">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openClubModal(id, name, stadium, market, compId) {
+        document.getElementById('clubModal').style.display = 'block';
+        document.getElementById('modal_club_id').value = id;
+        document.getElementById('modal_name').value = name;
+        document.getElementById('modal_stadium').value = stadium;
+        document.getElementById('modal_market').value = market;
+        document.getElementById('modal_comp').value = (compId && compId !== 'None') ? compId : '';
+    }
+    function closeClubModal() {
+        document.getElementById('clubModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('clubModal')) {
+            closeClubModal();
+        }
+    }
+</script>
 {% endblock %}

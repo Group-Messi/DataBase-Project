@@ -1,6 +1,136 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<h1>Competitions — Placeholder</h1>
-<p>This content appears inside the layout's main-content area.</p>
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    
+    <div style="margin-bottom: 2rem; border-bottom: 2px solid #9b59b6; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: #2c3e50; margin: 0;">🏆 Competition Yönetimi</h1>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #2c3e50;">➕ Yeni Lig/Kupa Ekle</h3>
+        <form action="{{ url_for('competitions_route') }}" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+            
+            <div style="flex: 1; min-width: 100px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Lig Kodu (ID)</label>
+                <input type="text" name="competition_id" required placeholder="TR1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 2; min-width: 200px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Lig Adı</label>
+                <input type="text" name="name" required placeholder="Süper Lig" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 1; min-width: 150px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Tip</label>
+                <select name="type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="domestic_league">Yerel Lig</option>
+                    <option value="domestic_cup">Yerel Kupa</option>
+                    <option value="international_cup">Uluslararası</option>
+                </select>
+            </div>
+            
+            <div style="flex: 1; min-width: 100px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Ülke ID</label>
+                <input type="number" name="country_id" placeholder="-1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                Kaydet
+            </button>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <h2 style="color: #34495e; margin-bottom: 1rem;">📋 Lig Listesi</h2>
+        {% if competitions|length == 0 %}
+            <p style="text-align: center; color: gray;">Henüz kayıt yok.</p>
+        {% else %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kod (ID)</th>
+                        <th>İsim</th>
+                        <th>Tip</th>
+                        <th>Ülke ID</th>
+                        <th style="text-align: right;">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in competitions %}
+                    <tr>
+                        <td><strong>{{ c.competition_id }}</strong></td>
+                        <td>{{ c.name }}</td>
+                        <td>{{ c.type }}</td>
+                        <td>{{ c.country_id }}</td>
+                        <td style="text-align: right; white-space: nowrap;">
+                            <button onclick="openCompModal('{{ c.competition_id }}', '{{ c.name }}', '{{ c.type }}')" 
+                                    style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                Düzenle
+                            </button>
+                            <form action="{{ url_for('delete_competition', competition_id=c.competition_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bu ligi silmek istediğine emin misin?');">
+                                <button type="submit" style="background-color: #c0392b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Sil</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+<div id="compModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #2c3e50;">Ligi Düzenle</h2>
+            <span onclick="closeCompModal()" style="cursor: pointer; font-size: 24px;">&times;</span>
+        </div>
+        <form action="{{ url_for('update_competition') }}" method="POST">
+            <input type="hidden" id="modal_comp_id" name="competition_id">
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">ID (Değiştirilemez):</label>
+                <input type="text" id="modal_comp_id_display" disabled style="width: 100%; padding: 8px; background: #eee; border: 1px solid #ddd;">
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">İsim:</label>
+                <input type="text" id="modal_name" name="name" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Tip:</label>
+                <select id="modal_type" name="type" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                    <option value="domestic_league">Yerel Lig</option>
+                    <option value="domestic_cup">Yerel Kupa</option>
+                    <option value="international_cup">Uluslararası</option>
+                </select>
+            </div>
+
+            <div style="text-align: right;">
+                <button type="button" onclick="closeCompModal()" style="padding: 8px 16px; background: #95a5a6; color: white; border: none; border-radius: 4px; margin-right: 5px;">İptal</button>
+                <button type="submit" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px;">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCompModal(id, name, type) {
+        document.getElementById('compModal').style.display = 'block';
+        document.getElementById('modal_comp_id').value = id;
+        document.getElementById('modal_comp_id_display').value = id;
+        document.getElementById('modal_name').value = name;
+        document.getElementById('modal_type').value = type;
+    }
+    function closeCompModal() {
+        document.getElementById('compModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('compModal')) {
+            closeCompModal();
+        }
+    }
+</script>
 {% endblock %}
