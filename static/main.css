@@ -1,0 +1,363 @@
+:root {
+  /* --- RENK PALETİ --- */
+  --bg-vapor:       #FAFAFA;  /* Main Background */
+  --bg-card:        #FFFFFF;  /* Card / Table Row Background */
+  --border-mist:    #E4E4E7;  /* Borders */
+  --text-secondary: #71717A;  /* Metadata / Labels */
+  --text-primary:   #18181B;  /* Headers / Scores */
+
+  /* --- FUNCTIONAL COLORS --- */
+  --color-success:  #27ae60;  /* Save / Home */
+  --color-danger:   #c0392b;  /* Delete */
+  --color-warning:  #f39c12;  /* Edit / Away */
+  --color-info:     #3498db;  /* Blue accents */
+  --color-cancel:   #95a5a6;  /* Cancel buttons */
+}
+
+/* Base Reset & Typography */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+.main-container {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    max-width: 1200px;
+    height: 650px; /* Fixed height for dashboard feel */
+    margin-bottom: 5rem;
+    margin-top: 1rem
+}
+
+.left-section {
+    flex: 2;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-mist);
+    border-radius: 12px;
+    /* KEY CHANGE: Removed padding so content hits the edges */
+    padding: 0; 
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Ensures the images clip to the rounded corners */
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    color: var(--bg-card);
+}
+
+/* Optional: Header styling if you want it ABOVE the image */
+.left-section .section-title {
+    padding: 20px 50px 15px 24px; /* Add padding back just to the title */
+    margin: 0;
+    z-index: 5;
+    background: var(--bg-card); /* Keep header background solid */
+}
+
+/* === CAROUSEL CONTAINER === */
+/* === CAROUSEL CONTAINER === */
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 100%; /* Fill the parent flex container */
+    margin: 0;
+    background: #000;
+}
+
+.carousel-track {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease-in-out;
+    z-index: 1;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+/* === RUMOUR CARD (Full Cover) === */
+.rumour-card {
+    position: relative;
+    width: 100%; /* FIXED: Was 800px, now fills parent */
+    height: 100%; /* Fill the height of the left-section */
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end; /* Align text to bottom */
+}
+
+.card-bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* FIXED: Focuses on top-center (faces) so it looks less "closed up" */
+    object-position: center 20%; 
+    object-fit: cover;
+    z-index: 1;
+    transform: scale(1);
+    transition: transform 6s ease;
+}
+
+/* FIXED: Reduced zoom from 1.1 to 1.05 to prevent "too close" feel */
+.carousel-slide.active .card-bg-image {
+    transform: scale(1.05);
+}
+
+.rumour-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Gradient starts earlier to make text more readable */
+    background: linear-gradient(to bottom, 
+        rgba(0,0,0,0) 20%, 
+        rgba(0,0,0,0.4) 60%, 
+        rgba(0,0,0,0.95) 100%);
+    z-index: 2;
+}
+
+.card-content {
+    position: relative;
+    z-index: 3;
+    /* FIXED: Added 70px bottom padding so text never hits the dots */
+    padding: 30px 40px 70px 40px; 
+    width: 100%;
+}
+/* === NAVIGATION ADJUSTMENTS === */
+/* Move buttons to the edges of the image */
+.carousel-btn {
+    color: white;
+    font: bold;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.1); /* Glassmorphism effect */
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.carousel-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.card-content h3 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+.card-content p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    max-width: 90%;
+    margin-bottom: 15px; /* Space between text and badge */
+}
+
+.prev-btn { left: 15px; }
+.next-btn { right: 15px; }
+
+/* Move dots up slightly to sit on the image */
+.carousel-nav {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 8px;
+}
+
+.carousel-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.4);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.carousel-dot.active {
+    background-color: #fff;
+    width: 24px; /* Stretch active dot for modern look */
+    border-radius: 10px;
+}
+
+/* === RIGHT SECTION === */
+.right-section {
+    flex: 1; /* Occupies 1/3rd of the space */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Top Right: Results */
+.results-container {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-mist);
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-header {
+    border-bottom: 2px solid var(--border-mist);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.match-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: var(--bg-vapor);
+    border-radius: 8px;
+    border: 1px solid var(--border-mist);
+}
+
+.team {
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex: 1;
+    color: var(--text-primary);
+}
+.team.home { text-align: right; }
+.team.away { text-align: left; }
+
+.score-box {
+    background-color: var(--text-primary);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin: 0 12px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.see-more-link {
+    text-align: right;
+    display: block;
+    margin-top: 10px;
+    color: var(--color-info);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.see-more-link:hover { color: #2980b9; }
+
+/* Bottom Right: Players */
+.players-container {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-mist);
+    border-radius: 12px;
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.players-container .section-title {
+    border-bottom: 2px solid var(--border-mist);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.player-list {
+    list-style: none;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.player-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-primary);
+    padding: 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.player-link:hover {
+    background-color: var(--bg-vapor);
+}
+
+.rank {
+    font-weight: 700;
+    color: var(--text-secondary);
+    width: 25px;
+    font-size: 0.9rem;
+}
+
+.club-tag {
+    margin-left: auto;
+    font-size: 0.75rem;
+    background-color: var(--bg-vapor);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-mist);
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        height: auto;
+    }
+    .left-section, .right-section {
+        flex: auto;
+        width: 100%;
+    }
+    .carousel-container {
+        min-height: 300px;
+    }
+}
