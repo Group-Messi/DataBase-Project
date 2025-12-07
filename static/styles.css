@@ -12,27 +12,20 @@
     --color-warning:  #f39c12;  /* Edit / Away */
     --color-info:     #3498db;  /* Blue accents */
     --color-cancel:   #95a5a6;  /* Cancel buttons */
-
 }
 
-/* FONT : NUNITO */
-
-/* --- 2. GLOBAL RESET --- */
+/* --- GLOBAL RESET --- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
-/* LAYOUT.HTML */
-
 body {
     background-color: var(--bg-vapor);
     color: var(--text-primary);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     line-height: 1.6;
-    
-    /* Layout: Pushes footer to bottom */
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -48,19 +41,23 @@ ul {
     list-style: none;
 }
 
-/* --- 3. UTILITIES --- */
+/* --- UTILITIES --- */
 .container {
     width: 100%;
-    max-width: var(--max-width);
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 1.5rem;
 }
 
-/* --- 4. NAVBAR --- */
+.mb-15 { margin-bottom: 15px; }
+.flex-row { display: flex; gap: 10px; }
+.d-inline { display: inline; }
+
+/* --- NAVBAR --- */
 .navbar {
     background-color: var(--bg-card);
     border-bottom: 1px solid var(--border-mist);
-    height: var(--nav-height);
+    height: auto;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -85,7 +82,7 @@ ul {
 }
 
 .logo img {
-    height: 4rem;        /* change this to fit your header (e.g. 32px, 48px) */
+    height: 4rem;
     width: auto;
     display: block;
     object-fit: contain;
@@ -101,34 +98,26 @@ ul {
     color: var(--text-secondary);
     font-weight: 500;
     display: inline-block;
-    
-    /* Added text-shadow to the transition list for smoothness */
     transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .nav-link:hover {
     color: var(--text-primary);
-    
-    /* The Scale */
     transform: scale(1.1);
-    
-    /* The Underline */
     text-decoration: underline;
     text-underline-offset: 5px;
     text-decoration-thickness: 1px;
-    
-    /* The Shadow: Horizontal | Vertical | Blur | Color (with transparency) */
     text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* --- 5. MAIN CONTENT --- */
+/* --- MAIN CONTENT --- */
 .main-content {
-    flex: 1; /* Consumes remaining space */
+    flex: 1;
     padding-top: 2rem;
     padding-bottom: 2rem;
 }
 
-/* --- 6. FOOTER --- */
+/* --- FOOTER --- */
 .footer {
     background-color: var(--bg-card);
     border-top: 1px solid var(--border-mist);
@@ -139,68 +128,7 @@ ul {
     margin-top: auto;
 }
 
-/* GAMES.HTML */
-
-.games-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-
-
-/* --- 4. CARDS & FORMS --- */
-.add-game-card {
-    background: var(--bg-card); /* Was #f8f9fa */
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid var(--border-mist); /* Was #e9ecef */
-    margin-bottom: 30px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Added subtle depth */
-}
-
-.card-title {
-    margin-top: 0;
-    color: var(--text-primary);
-}
-
-.game-form {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: flex-end;
-}
-
-.form-group { flex: 1; }
-.form-group.small { flex: 0.5; min-width: 80px; }
-.form-group.medium { min-width: 120px; }
-.form-group.large { min-width: 180px; }
-
-.form-label {
-    display: block;
-    font-size: 0.9em;
-    margin-bottom: 5px;
-    color: var(--text-secondary); /* Applied text-secondary */
-    font-weight: 500;
-}
-
-.form-control {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border-mist); /* Was #ddd */
-    background-color: var(--bg-card);
-    color: var(--text-primary);
-    border-radius: 4px;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--text-secondary); /* darkened border on focus */
-}
-
-/* --- 5. BUTTONS --- */
+/* --- BUTTONS --- */
 .btn {
     border: none;
     padding: 6px 12px;
@@ -208,7 +136,7 @@ ul {
     cursor: pointer;
     font-weight: bold;
     display: inline-block;
-    color: white; /* Text is always white on buttons */
+    color: white;
     transition: opacity 0.2s;
 }
 
@@ -216,35 +144,87 @@ ul {
 
 .btn-large { padding: 10px 20px; }
 
-/* Using functional variables now */
 .btn-success { background-color: var(--color-success); }
 .btn-warning { background-color: var(--color-warning); margin-right: 5px; }
 .btn-danger  { background-color: var(--color-danger); }
 .btn-primary { background-color: var(--color-info); }
 .btn-secondary { background-color: var(--color-cancel); margin-right: 5px; }
 
-/* --- 6. TABLE STYLES --- */
+
+:root {
+    /* RENK PALETİ - Included here for reference */
+    --bg-vapor:       #FAFAFA;  /* Main Background */
+    --bg-card:        #FFFFFF;  /* Card / Table Row Background */
+    --border-mist:    #E4E4E7;  /* Borders */
+    --text-secondary: #71717A;  /* Metadata / Labels */
+    --text-primary:   #18181B;  /* Headers / Scores */
+
+    /* FUNCTIONAL COLORS */
+    --color-success:  #27ae60;
+    --color-danger:   #c0392b;
+    --color-warning:  #f39c12;
+    --color-info:     #3498db;
+    --color-cancel:   #95a5a6;
+}
+
+body {
+    font-family: 'Nunito', system-ui, Arial, sans-serif;
+    background-color: var(--bg-vapor);
+    color: var(--text-primary);
+}
+
+/* --- TABLE STYLES --- */
 table {
     width: 100%;
-    border-collapse: collapse;
-    background-color: var(--bg-card);
+    border-collapse: separate; /* Changed to separate for border-radius to work well */
+    border-spacing: 0;         /* Removes gaps between cells */
+    background: var(--bg-card);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Softer shadow */
     border-radius: 8px;
-    overflow: hidden; /* For rounded corners */
-    border: 1px solid var(--border-mist);
+    overflow: hidden;
+    border: 1px solid var(--border-mist); /* Subtle outer border */
+    margin-top: 10px;
 }
 
 th {
-    background-color: var(--bg-vapor); /* Header slightly darker than body */
-    color: var(--text-secondary);
-    font-weight: 600;
+    /* Clean Header Style */
+    background-color: var(--bg-vapor); /* Light grey header */
+    color: var(--text-primary);        /* Dark, readable text */
+    font-weight: 700;
+    padding: 12px 16px;
     text-align: left;
-    padding: 12px;
-    border-bottom: 1px solid var(--border-mist);
+    border-bottom: 2px solid var(--border-mist); /* Stronger separator for header */
+    text-transform: uppercase;         /* Optional: makes headers look like labels */
+    font-size: 0.85rem;                /* Optional: cleaner look for labels */
+    letter-spacing: 0.05em;
 }
 
 td {
-    padding: 12px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border-mist);
+    color: var(--text-secondary);      /* Default text color */
+    vertical-align: middle;
+}
+
+/* Make the primary data column (usually the first one) stand out */
+td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Remove border from the very last row so it doesn't double up with table border */
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* HOVER EFEKTİ */
+tr:hover {
+    background-color: var(--bg-vapor);
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Optional: Hover effect for text to ensure contrast */
+tr:hover td {
     color: var(--text-primary);
 }
 
@@ -345,9 +325,3 @@ td {
 .close-btn:hover { color: var(--text-primary); }
 
 .modal-footer { text-align: right; margin-top: 20px; }
-
-/* Utilities */
-.mb-15 { margin-bottom: 15px; }
-.flex-row { display: flex; gap: 10px; }
-.disabled-input { background: var(--bg-vapor); color: var(--text-secondary); }
-.d-inline { display: inline; }
