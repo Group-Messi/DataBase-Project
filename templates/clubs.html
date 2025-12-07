@@ -9,88 +9,56 @@
 <div class="main-container">
 
     <div class="page-header">
-        <h1 class="page-title">🛡️ Club Yönetimi</h1>
-    </div>
-
-    <div class="form-card">
-        <h3 class="section-title">➕ Yeni Kulüp Ekle</h3>
-        <form action="{{ url_for('clubs_route') }}" method="POST" class="club-form">
-
-            <div class="form-group">
-                <label class="form-label">Club ID</label>
-                <input type="number" name="club_id" required placeholder="101" class="form-input">
-            </div>
-
-            <div class="form-group large">
-                <label class="form-label">Kulüp Adı</label>
-                <input type="text" name="name" required placeholder="Galatasaray" class="form-input">
-            </div>
-
-            <div class="form-group medium">
-                <label class="form-label">Stadyum</label>
-                <input type="text" name="stadium_name" placeholder="Rams Park" class="form-input">
-            </div>
-
-            <div class="form-group small">
-                <label class="form-label">Toplam Değer</label>
-                <input type="number" step="0.01" name="total_market_value" placeholder="Milyon €" class="form-input">
-            </div>
-
-            <div class="form-group large">
-                <label class="form-label">Lig (Competition)</label>
-                <select name="domestic_competition_id" class="form-select">
-                    <option value="">Seçiniz...</option>
-                    {% for comp in competitions %}
-                    <option value="{{ comp.competition_id }}">{{ comp.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <button type="submit" class="btn btn-save">Kaydet</button>
-        </form>
+        <h1 class="page-title">Clubs Management</h1>
     </div>
 
     <div class="table-wrapper">
-        <h2>📋 Kulüp Listesi (Son 100)</h2>
+        <h2>Clubs List</h2>
+
         {% if clubs|length == 0 %}
-        <p class="empty-state">Henüz kayıt yok.</p>
+        <p class="empty-state">No clubs found.</p>
         {% else %}
         <table>
             <thead>
                 <tr>
-                    <!-- <th>ID</th> -->
-                    <th>Kulüp</th>
-                    <th>Stadyum</th>
-                    <th>Lig</th>
-                    <th>Toplam Değer</th>
-                    <th class="actions-cell">İşlemler</th>
+                    <th>Club Name</th>
+                    <th>Stadium</th>
+                    <th>Market Value</th>
+                    <th>Competition</th>
+                    <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for c in clubs %}
+                {% for club in clubs %}
                 <tr>
-                    <!-- <td>{{ c.club_id }}</td> -->
-                    <td class="club-cell"><strong><img src="/static/logos/{{ (c.club_id % 19) + 1 }}.png">{{ c.name
-                            }}</strong>
-                    </td>
-                    <td>{{ c.stadium_name }}</td>
                     <td>
-                        {% if c.competition_name %}
-                        <span class="badge-comp">{{ c.competition_name }}</span>
+                        <div class="text-player-name">
+                            <strong>
+                                <img src="/static/logos/{{ (club.club_id % 19) + 1 }}.png" alt="Logo">
+                                {{ club.name }}
+                            </strong>
+                        </div>
+                    </td>
+                    <td>{{ club.stadium_name }}</td>
+                    <td>
+                        {% if club.total_market_value %}
+                        {{ "{:,.0f}".format(club.total_market_value) }} m€
+                        {% else %} - {% endif %}
+                    </td>
+                    <td>
+                        {% if club.competition_name %}
+                        {{ club.competition_name }}
                         {% else %}
-                        -
+                        {{ club.domestic_competition_id }}
                         {% endif %}
                     </td>
-                    <td>{{ "{:,.2f}".format(c.total_market_value) if c.total_market_value else '0' }}</td>
                     <td class="actions-cell">
-                        <button
-                            onclick="openClubModal('{{ c.club_id }}', '{{ c.name }}', '{{ c.stadium_name }}', '{{ c.total_market_value }}', '{{ c.domestic_competition_id }}')"
-                            class="btn btn-sm btn-edit">
-                            Düzenle
-                        </button>
-                        <form action="{{ url_for('delete_club', club_id=c.club_id) }}" method="POST"
-                            style="display:inline;" onsubmit="return confirm('Silinsin mi?');">
-                            <button type="submit" class="btn btn-sm btn-delete">Sil</button>
+                        <button onclick="openEditModal('{{ club.club_id }}', '{{ club.name }}', '{{ club.stadium_name }}', '{{ club.total_market_value }}', '{{ club.domestic_competition_id }}')"
+                            class="btn btn-sm btn-edit">Edit</button>
+
+                        <form action="{{ url_for('delete_club', club_id=club.club_id) }}" method="POST" style="display:inline;"
+                            onsubmit="return confirm('Are you sure you want to delete {{ club.name }}?');">
+                            <button type="submit" class="btn btn-sm btn-delete">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -99,65 +67,100 @@
         </table>
         {% endif %}
     </div>
-</div>
 
-<div id="clubModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Kulübü Düzenle</h2>
-            <span onclick="closeClubModal()" class="close-btn">&times;</span>
-        </div>
-        <form action="{{ url_for('update_club') }}" method="POST">
-            <input type="hidden" id="modal_club_id" name="club_id">
+    <div class="form-card" style="margin-top: 30px;">
+        <h3 class="section-title">Add New Club</h3>
 
-            <div style="margin-bottom: 15px;">
-                <label class="form-label">İsim:</label>
-                <input type="text" id="modal_name" name="name" required class="form-input">
+        <form action="{{ url_for('clubs_route') }}" method="POST" class="player-form">
+            <div class="form-group medium">
+                <label class="form-label">Club ID</label>
+                <input type="number" name="club_id" required placeholder="e.g. 505" class="form-input">
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label class="form-label">Stadyum:</label>
-                <input type="text" id="modal_stadium" name="stadium_name" class="form-input">
+            <div class="form-group large">
+                <label class="form-label">Club Name</label>
+                <input type="text" name="name" required placeholder="Galatasaray" class="form-input">
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label class="form-label">Toplam Değer:</label>
-                <input type="number" step="0.01" id="modal_market" name="total_market_value" class="form-input">
+            <div class="form-group large">
+                <label class="form-label">Stadium Name</label>
+                <input type="text" name="stadium_name" placeholder="Rams Park" class="form-input">
             </div>
 
-            <div style="margin-bottom: 20px;">
-                <label class="form-label">Lig:</label>
-                <select id="modal_comp" name="domestic_competition_id" class="form-select">
-                    <option value="">Seçiniz...</option>
+            <div class="form-group medium">
+                <label class="form-label">Market Value (m€)</label>
+                <input type="number" step="0.01" name="total_market_value" class="form-input">
+            </div>
+
+            <div class="form-group medium">
+                <label class="form-label">Competition</label>
+                <select name="domestic_competition_id" class="form-select">
+                    <option value="">Select Competition...</option>
                     {% for comp in competitions %}
                     <option value="{{ comp.competition_id }}">{{ comp.name }}</option>
                     {% endfor %}
                 </select>
             </div>
 
+            <button type="submit" class="btn btn-save" style="margin-top: 24px;">Save Club</button>
+        </form>
+    </div>
+</div>
+
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Club</h2>
+            <span onclick="closeEditModal()" class="close-btn">&times;</span>
+        </div>
+        <form action="{{ url_for('update_club') }}" method="POST">
+            <input type="hidden" id="modal_club_id" name="club_id">
+            
+            <div class="mb-15">
+                <label class="form-label">Club Name</label>
+                <input type="text" id="modal_name" name="name" class="form-input">
+            </div>
+            
+            <div class="mb-15">
+                <label class="form-label">Stadium</label>
+                <input type="text" id="modal_stadium" name="stadium_name" class="form-input">
+            </div>
+
+            <div class="mb-15">
+                <label class="form-label">Value (m€)</label>
+                <input type="number" step="0.01" id="modal_value" name="total_market_value" class="form-input">
+            </div>
+
+            <div class="mb-15">
+                <label class="form-label">Competition Code</label>
+                <input type="text" id="modal_comp_id" name="domestic_competition_id" class="form-input">
+            </div>
+
             <div class="modal-footer">
-                <button type="button" onclick="closeClubModal()" class="btn btn-cancel">İptal</button>
-                <button type="submit" class="btn btn-modal-save">Kaydet</button>
+                <button type="button" onclick="closeEditModal()" class="btn btn-cancel">Cancel</button>
+                <button type="submit" class="btn btn-modal-save">Save Changes</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function openClubModal(id, name, stadium, market, compId) {
-        document.getElementById('clubModal').style.display = 'block';
+    function openEditModal(id, name, stadium, val, compId) {
+        document.getElementById('editModal').style.display = 'block';
         document.getElementById('modal_club_id').value = id;
         document.getElementById('modal_name').value = name;
-        document.getElementById('modal_stadium').value = stadium;
-        document.getElementById('modal_market').value = market;
-        document.getElementById('modal_comp').value = (compId && compId !== 'None') ? compId : '';
+        document.getElementById('modal_stadium').value = (stadium && stadium !== 'None') ? stadium : '';
+        document.getElementById('modal_value').value = (val && val !== 'None') ? val : '';
+        document.getElementById('modal_comp_id').value = (compId && compId !== 'None') ? compId : '';
     }
-    function closeClubModal() {
-        document.getElementById('clubModal').style.display = 'none';
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
     }
+
     window.onclick = function (event) {
-        if (event.target == document.getElementById('clubModal')) {
-            closeClubModal();
+        if (event.target == document.getElementById('editModal')) {
+            closeEditModal();
         }
     }
 </script>
