@@ -10,7 +10,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Add these lines to your layout.html head section -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='tables.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='badges.css') }}">
@@ -29,12 +28,19 @@
                 Messibase
             </a>
             <ul class="nav-links">
-                <li><a href="/games" class="nav-link">Games</a></li>
-                <li><a href="/club_games" class="nav-link">Club Games</a></li>
-                <li><a href="/players" class="nav-link">Players</a></li>
-                <li><a href="/clubs" class="nav-link">Clubs</a></li>
-                <li><a href="/transfers" class="nav-link">Transfers</a></li>
-                <li><a href="/competitions" class="nav-link">Competitions</a></li>
+                <li><a href="/games" class="nav-link {% if current_page == 'games' %}active-link{% endif %}">Games</a>
+                </li>
+                <li><a href="/club_games"
+                        class="nav-link {% if current_page == 'club_games' %}active-link{% endif %}">Club Games</a></li>
+                <li><a href="/players"
+                        class="nav-link {% if current_page == 'players' %}active-link{% endif %}">Players</a></li>
+                <li><a href="/clubs" class="nav-link {% if current_page == 'clubs' %}active-link{% endif %}">Clubs</a>
+                </li>
+                <li><a href="/transfers"
+                        class="nav-link {% if current_page == 'transfers' %}active-link{% endif %}">Transfers</a></li>
+                <li><a href="/competitions"
+                        class="nav-link {% if current_page == 'competitions' %}active-link{% endif %}">Competitions</a>
+                </li>
             </ul>
         </div>
     </nav>

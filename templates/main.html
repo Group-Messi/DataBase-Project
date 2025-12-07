@@ -1,6 +1,239 @@
 {% extends "layout.html" %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+{% endblock %}
+
+
 {% block content %}
-<h1>Main Page — Placeholder</h1>
-<p>This content appears inside the layout's main-content area.</p>
+
+
+<div class="main-container">
+
+    <section class="left-section">
+        <h2 class="section-title"><i class="fas fa-bullhorn"></i> NEWS</h2>
+
+        <div class="carousel-container">
+            <div class="carousel-track" id="carouselTrack">
+
+                <div class="carousel-slide active">
+                    <div class="rumour-card">
+                        <img src="static/carousel/1.jpg" alt="Messi Background" class="card-bg-image">
+                        <div class="card-content">
+                            <h3>Messi Eyes Historic 2026 Ballon d'Or</h3>
+                            <p>Inter Miami star emerges as early favorite following sensational start to the season.</p>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carousel-slide">
+                    <div class="rumour-card">
+                        <img src="static/carousel/2.png" alt="Stadium Background" class="card-bg-image">
+                        <div class="card-content">
+                            <h3>Osimhen to Chelsea Deal in Jeopardy</h3>
+                            <p>Negotiations with Galatasaray reportedly stalled over wage demands and final fee
+                                structure.</p>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carousel-slide">
+                    <div class="rumour-card">
+                        <img src="static/carousel/3.jpg" alt="Match Action Background" class="card-bg-image">
+                        <div class="card-content">
+                            <h3>Manchester is Blue: City 2-0 United</h3>
+                            <p>Haaland's brace sends City top of the table as Red Devils crumble at the Etihad.</p>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carousel-slide">
+                    <div class="rumour-card">
+                        <img src="static/carousel/4.jpg" alt="Pitch Background" class="card-bg-image">
+                        <div class="card-content">
+                            <h3>Désiré Doué Sidelined for 3 Months</h3>
+                            <p>PSG wonderkid suffers Grade 3 hamstring tear in training; surgery likely required.</p>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carousel-slide">
+                    <div class="rumour-card">
+                        <img src="static/carousel/5.jpg" alt="Stadium Lights Background" class="card-bg-image">
+                        <div class="card-content">
+                            <h3>TFF Launches Betting Investigation</h3>
+                            <p>Turkish Federation probes alleged match-fixing irregularities involving multiple Süper
+                                Lig clubs.</p>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="carousel-btn prev-btn" id="prevBtn">
+                <i class="fas fa-chevron-left">
+                    < </i>
+            </button>
+            <button class="carousel-btn next-btn" id="nextBtn">
+                <i class="fas fa-chevron-right"> > </i>
+            </button>
+
+            <div class="carousel-nav" id="carouselNav">
+            </div>
+        </div>
+    </section>
+
+    <section class="right-section">
+
+        <div class="results-container">
+            <div class="section-header">
+                <h2 class="section-title"><i class="fas fa-futbol"></i> Latest Results</h2>
+            </div>
+
+            <div class="results-list">
+                <div class="match-card">
+                    <div class="team home">Man City</div>
+                    <div class="score-box">2 - 0</div>
+                    <div class="team away">Man Utd</div>
+                </div>
+                <div class="match-card">
+                    <div class="team home">Barcelona</div>
+                    <div class="score-box">2 - 0</div>
+                    <div class="team away">Getafe</div>
+                </div>
+                <div class="match-card">
+                    <div class="team home">Liverpool</div>
+                    <div class="score-box">0 - 1</div>
+                    <div class="team away">Tottenham Hotspurs</div>
+                </div>
+            </div>
+            <a href="/games" class="see-more-link">See all results &rarr;</a>
+        </div>
+
+        <div class="players-container">
+            <h2 class="section-title"><i class="fas fa-star"></i> Popular Players</h2>
+            <ul class="player-list">
+                <li>
+                    <a href="/players/418560" class="player-link">
+                        <span class="rank">1</span> Erling Haaland
+                        <span class="club-tag">Man City</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/players/581678" class="player-link">
+                        <span class="rank">2</span> Jude Bellingham
+                        <span class="club-tag">Real Madrid</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/players/342229" class="player-link">
+                        <span class="rank">3</span> Kylian Mbappé
+                        <span class="club-tag">PSG</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/players/598577" class="player-link">
+                        <span class="rank">4</span> Florian Wirtz
+                        <span class="club-tag">Liverpool</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/players/914562" class="player-link">
+                        <span class="rank">5</span> Désiré Doué
+                        <span class="club-tag">PSG</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const track = document.getElementById('carouselTrack');
+        const slides = Array.from(track.children);
+        const nextButton = document.getElementById('nextBtn');
+        const prevButton = document.getElementById('prevBtn');
+        const dotsContainer = document.getElementById('carouselNav');
+
+        let currentIndex = 0;
+        const autoSpinInterval = 5000; // 5 seconds
+        let intervalId;
+
+        // 1. Initialize Dots
+        slides.forEach((_, index) => {
+            const dot = document.createElement('button');
+            dot.classList.add('carousel-dot');
+            if (index === 0) dot.classList.add('active');
+
+            // Click dot to navigate
+            dot.addEventListener('click', () => {
+                goToSlide(index);
+                resetTimer();
+            });
+            dotsContainer.appendChild(dot);
+        });
+
+        const dots = Array.from(dotsContainer.children);
+
+        // 2. Core Update Function
+        function updateCarousel() {
+            // Remove 'active' from all slides and dots
+            slides.forEach(slide => slide.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+
+            // Add 'active' to current
+            slides[currentIndex].classList.add('active');
+            dots[currentIndex].classList.add('active');
+        }
+
+        // 3. Navigation Logic
+        function goToSlide(index) {
+            currentIndex = index;
+            // Loop logic
+            if (currentIndex >= slides.length) currentIndex = 0;
+            if (currentIndex < 0) currentIndex = slides.length - 1;
+            updateCarousel();
+        }
+
+        function nextSlide() {
+            goToSlide(currentIndex + 1);
+        }
+
+        function prevSlide() {
+            goToSlide(currentIndex - 1);
+        }
+
+        // 4. Event Listeners for Arrows
+        nextButton.addEventListener('click', () => {
+            nextSlide();
+            resetTimer(); // Reset auto-spin when user interacts
+        });
+
+        prevButton.addEventListener('click', () => {
+            prevSlide();
+            resetTimer();
+        });
+
+        // 5. Auto Spin Logic
+        function startTimer() {
+            intervalId = setInterval(nextSlide, autoSpinInterval);
+        }
+
+        function resetTimer() {
+            clearInterval(intervalId);
+            startTimer();
+        }
+
+        // Start the carousel
+        startTimer();
+    });
+</script>
+
 {% endblock %}

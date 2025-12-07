@@ -41,6 +41,21 @@ ul {
     list-style: none;
 }
 
+.navbar .nav-links .active-link {
+    font-size: large;
+    font-weight: bold; /* Make the text bold */
+    text-decoration: underline; /* Add an underline */
+    /* Optional: Change color for more emphasis */
+    color: var(--text-primary); /* Example: A strong blue color */
+}
+
+.navbar .nav-links .active-link:hover {
+    text-decoration: underline;
+    cursor: default;
+    /* Ensure the color stays the same or a slightly different active hover color */
+    transform: scale(1.0);
+}
+
 /* --- UTILITIES --- */
 .container {
     width: 100%;

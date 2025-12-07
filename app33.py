@@ -78,7 +78,7 @@ def club_games():
     except Exception as e:
         return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
-    return render_template('club_games.html', games=games_data, clubs=clubs_data)
+    return render_template('club_games.html', games=games_data, clubs=clubs_data, current_page="club_games")
 
 @app.route('/club_games/delete/<int:game_id>', methods=['POST'])
 def delete_club_game(game_id):
@@ -162,7 +162,7 @@ def games():
     except Exception as e:
         return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
-    return render_template('games.html', games=games_data, clubs=clubs_data)
+    return render_template('games.html', games=games_data, clubs=clubs_data, current_page="games")
 
 @app.route('/games/delete/<int:game_id>', methods=['POST'])
 def delete_game(game_id):
@@ -251,7 +251,7 @@ def transfers():
     except Exception as e:
         return f"<h1>Transfer Verileri Çekilemedi:</h1><p>{e}</p>"
 
-    return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data)
+    return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data, current_page="transfers")
 
 @app.route('/transfers/delete/<int:transfer_id>', methods=['POST'])
 def delete_transfer(transfer_id):
@@ -340,7 +340,7 @@ def players():
         SELECT p.player_id, p.name, p.position, p.market_value_in_eur, p.current_club_id, c.name AS club_name
         FROM players p
         LEFT JOIN clubs c ON p.current_club_id = c.club_id
-        ORDER BY p.player_id DESC LIMIT 100
+        ORDER BY p.market_value_in_eur DESC LIMIT 100
     """
     
     players_data = []
@@ -358,7 +358,7 @@ def players():
     except Exception as e:
         return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
-    return render_template('players.html', players=players_data, clubs=clubs_data)
+    return render_template('players.html', players=players_data, clubs=clubs_data, current_page="players")
 
 @app.route('/players/delete/<int:player_id>', methods=['POST'])
 def delete_player(player_id):
@@ -417,7 +417,7 @@ def player_page(player_id):
                 if not player:
                     return f"<h1>Oyuncu Bulunamadı</h1><p>Player ID: {player_id} bulunamadı.</p>", 404
         
-        return render_template('player.html', player=player)
+        return render_template('player.html', player=player, current_page="players")
     except Exception as e:
         return f"<h1>Hata:</h1><p>{e}</p>", 500
 
@@ -470,7 +470,7 @@ def clubs_route():
     except Exception as e:
         return f"<h1>Veri Hatası:</h1><p>{e}</p>"
 
-    return render_template('clubs.html', clubs=clubs_data, competitions=competitions_data)
+    return render_template('clubs.html', clubs=clubs_data, competitions=competitions_data, current_page="clubs")
 
 @app.route('/clubs/update', methods=['POST'])
 def update_club():
@@ -534,7 +534,7 @@ def competitions_route():
     except Exception as e:
         return f"<h1>Veri Hatası:</h1><p>{e}</p>"
 
-    return render_template('competitions.html', competitions=comps_data)
+    return render_template('competitions.html', competitions=comps_data, current_page="competitions")
 
 @app.route('/competitions/update', methods=['POST'])
 def update_competition():
@@ -568,11 +568,4 @@ if __name__ == "__main__":
     app.run(debug=True, port=port)
 
 
-#7 SINGLE PLAYER
-@app.route("/players/<int:player_id>")
-def player_page(player_id):
-    # Example DB query (SQLAlchemy style)
-    # player = Player.query.get(player_id)
 
-    # Pass player_id to your template for now
-    return render_template("player.html", player_id=player_id)
