@@ -5,7 +5,7 @@
     
     <!-- BAŞLIK -->
     <div style="margin-bottom: 2rem; border-bottom: 2px solid #3498db; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-        <h1 style="color: #2c3e50; margin: 0;">⚽ Club Games Yönetimi</h1>
+        <h1 style="color: #2c3e50; margin: 0;">⚽ Games (Maçlar) Yönetimi</h1>
     </div>
 
     <!-- 1. BÖLÜM: YENİ MAÇ EKLEME FORMU -->
@@ -19,8 +19,8 @@
             </div>
 
             <div style="flex: 1; min-width: 180px;">
-                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Kulüp</label>
-                <select name="club_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Ev Sahibi Kulüp</label>
+                <select name="home_club_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <option value="" disabled selected>Kulüp seçin...</option>
                     {% for club in clubs %}
                         <option value="{{ club.club_id }}">
@@ -30,22 +30,31 @@
                 </select>
             </div>
 
-            <div style="flex: 1; min-width: 120px;">
-                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Saha</label>
-                <select name="hosting" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="Home">Ev Sahibi (Home)</option>
-                    <option value="Away">Deplasman (Away)</option>
+            <div style="flex: 1; min-width: 180px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Deplasman Kulüp</label>
+                <select name="away_club_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="" disabled selected>Kulüp seçin...</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">
+                            {{ club.name }} (ID: {{ club.club_id }})
+                        </option>
+                    {% endfor %}
                 </select>
             </div>
 
-            <div style="flex: 0.5; min-width: 80px;">
-                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Bizim Gol</label>
-                <input type="number" name="own_goals" value="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            <div style="flex: 1; min-width: 150px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Maç Tarihi</label>
+                <input type="date" name="game_date" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
             </div>
 
             <div style="flex: 0.5; min-width: 80px;">
-                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Rakip Gol</label>
-                <input type="number" name="opponent_goals" value="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Ev Sahibi Gol</label>
+                <input type="number" name="home_club_goals" value="0" min="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+            </div>
+
+            <div style="flex: 0.5; min-width: 80px;">
+                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">Deplasman Gol</label>
+                <input type="number" name="away_club_goals" value="0" min="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
             </div>
 
             <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
@@ -61,48 +70,48 @@
         {% if games|length == 0 %}
             <p style="text-align: center; color: gray;">Henüz kayıtlı maç bulunamadı.</p>
         {% else %}
-            <!-- Tablo stilleri artık layout.html'den geliyor -->
             <table>
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Kulüp</th>
-                        <th>Saha</th>
+                        <th>Tarih</th>
+                        <th>Ev Sahibi</th>
                         <th style="text-align: center;">Skor</th>
+                        <th>Deplasman</th>
                         <th style="text-align: right;">İşlemler</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for game in games %}
-                    <!-- BURASI ARTIK TEMİZ, style="...hover..." YOK -->
                     <tr>
                         <td>{{ game.game_id }}</td>
+                        <td>{{ game.game_date }}</td>
                         <td>
-                            {% if game.club_name %}
-                                <strong>{{ game.club_name }}</strong>
+                            {% if game.home_club_name %}
+                                <strong>{{ game.home_club_name }}</strong>
                             {% else %}
-                                <span style="color:red">ID: {{ game.club_id }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% if game.hosting == 'Home' %}
-                                <span style="background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">Ev Sahibi</span>
-                            {% else %}
-                                <span style="background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">Deplasman</span>
+                                <span style="color:red">ID: {{ game.home_club_id }}</span>
                             {% endif %}
                         </td>
                         <td style="text-align: center; font-weight: bold; font-size: 1.1em;">
-                            {{ game.own_goals }} - {{ game.opponent_goals }}
+                            {{ game.home_club_goals }} - {{ game.away_club_goals }}
+                        </td>
+                        <td>
+                            {% if game.away_club_name %}
+                                <strong>{{ game.away_club_name }}</strong>
+                            {% else %}
+                                <span style="color:red">ID: {{ game.away_club_id }}</span>
+                            {% endif %}
                         </td>
                         <td style="text-align: right; white-space: nowrap;">
                             <!-- DÜZENLE BUTONU (Modalı Açar) -->
-                            <button onclick="openEditModal('{{ game.game_id }}', '{{ game.hosting }}', '{{ game.own_goals }}', '{{ game.opponent_goals }}')" 
+                            <button onclick="openEditModal('{{ game.game_id }}', '{{ game.home_club_id }}', '{{ game.away_club_id }}', '{{ game.game_date }}', '{{ game.home_club_goals }}', '{{ game.away_club_goals }}')" 
                                     style="background-color: #f39c12; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px;">
                                 Düzenle
                             </button>
 
                             <!-- SİLME BUTONU -->
-                            <form action="{{ url_for('delete_game', game_id=game.game_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bu maçı silmek istediğine emin misin? (ID: {{ game.game_id }})');">
+                            <form action="{{ url_for('delete_game', game_id=game.game_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Bu maçı silmek istediğinize emin misiniz? (ID: {{ game.game_id }})');">
                                 <button type="submit" style="background-color: #c0392b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
                                     Sil
                                 </button>
@@ -118,7 +127,7 @@
 
 <!-- 3. BÖLÜM: DÜZENLEME MODALI (GİZLİ PENCERE) -->
 <div id="editModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-    <div style="background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+    <div style="background-color: white; margin: 5% auto; padding: 20px; border-radius: 8px; width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
             <h2 style="margin: 0; color: #2c3e50;">Maçı Düzenle</h2>
             <span onclick="closeEditModal()" style="cursor: pointer; font-size: 24px; font-weight: bold; color: #aaa;">&times;</span>
@@ -134,21 +143,38 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px;">Saha:</label>
-                <select id="modal_hosting" name="hosting" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
-                    <option value="Home">Home</option>
-                    <option value="Away">Away</option>
+                <label style="display: block; margin-bottom: 5px;">Ev Sahibi Kulüp:</label>
+                <select id="modal_home_club_id" name="home_club_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                    <option value="" disabled>Kulüp seçin...</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">{{ club.name }} (ID: {{ club.club_id }})</option>
+                    {% endfor %}
                 </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Deplasman Kulüp:</label>
+                <select id="modal_away_club_id" name="away_club_id" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                    <option value="" disabled>Kulüp seçin...</option>
+                    {% for club in clubs %}
+                        <option value="{{ club.club_id }}">{{ club.name }} (ID: {{ club.club_id }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Maç Tarihi:</label>
+                <input type="date" id="modal_game_date" name="game_date" required style="width: 100%; padding: 8px; border: 1px solid #ddd;">
             </div>
 
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <div style="flex: 1;">
-                    <label style="display: block; margin-bottom: 5px;">Bizim Gol:</label>
-                    <input type="number" id="modal_own_goals" name="own_goals" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                    <label style="display: block; margin-bottom: 5px;">Ev Sahibi Gol:</label>
+                    <input type="number" id="modal_home_club_goals" name="home_club_goals" min="0" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
                 </div>
                 <div style="flex: 1;">
-                    <label style="display: block; margin-bottom: 5px;">Rakip Gol:</label>
-                    <input type="number" id="modal_opponent_goals" name="opponent_goals" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
+                    <label style="display: block; margin-bottom: 5px;">Deplasman Gol:</label>
+                    <input type="number" id="modal_away_club_goals" name="away_club_goals" min="0" style="width: 100%; padding: 8px; border: 1px solid #ddd;">
                 </div>
             </div>
 
@@ -161,13 +187,15 @@
 </div>
 
 <script>
-    function openEditModal(id, hosting, own, opponent) {
+    function openEditModal(id, homeClubId, awayClubId, gameDate, homeGoals, awayGoals) {
         document.getElementById('editModal').style.display = 'block';
         document.getElementById('modal_game_id').value = id;
         document.getElementById('modal_game_id_display').value = id;
-        document.getElementById('modal_hosting').value = hosting;
-        document.getElementById('modal_own_goals').value = own;
-        document.getElementById('modal_opponent_goals').value = opponent;
+        document.getElementById('modal_home_club_id').value = homeClubId;
+        document.getElementById('modal_away_club_id').value = awayClubId;
+        document.getElementById('modal_game_date').value = gameDate;
+        document.getElementById('modal_home_club_goals').value = homeGoals;
+        document.getElementById('modal_away_club_goals').value = awayGoals;
     }
 
     function closeEditModal() {

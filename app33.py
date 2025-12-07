@@ -31,10 +31,10 @@ def home():
     return render_template("main.html")
 
 # ==========================================
-# 1. GAMES (MAÇLAR) CRUD
+# 1. CLUB_GAMES (KULÜP MAÇLARI) CRUD
 # ==========================================
-@app.route('/games', methods=['GET', 'POST'])
-def games():
+@app.route('/club_games', methods=['GET', 'POST'])
+def club_games():
     # POST: Yeni Maç Ekleme
     if request.method == 'POST':
         try:
@@ -53,7 +53,7 @@ def games():
                 with conn.cursor() as cursor:
                     cursor.execute(insert_sql, (game_id, club_id, hosting, own_goals, opponent_goals))
                 conn.commit()
-            return redirect(url_for('games'))
+            return redirect(url_for('club_games'))
         except Exception as e:
             return f"<h1>Kayıt Hatası:</h1><p>{e}</p>"
 
@@ -78,12 +78,96 @@ def games():
     except Exception as e:
         return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
+    return render_template('club_games.html', games=games_data, clubs=clubs_data)
+
+@app.route('/club_games/delete/<int:game_id>', methods=['POST'])
+def delete_club_game(game_id):
+    try:
+        delete_sql = "DELETE FROM club_games WHERE game_id = %s"
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(delete_sql, (game_id,))
+            conn.commit()
+        return redirect(url_for('club_games'))
+    except Exception as e:
+        return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+
+@app.route('/club_games/update', methods=['POST'])
+def update_club_game():
+    try:
+        game_id = int(request.form['game_id'])
+        hosting = request.form['hosting']
+        own_goals = int(request.form['own_goals'])
+        opponent_goals = int(request.form['opponent_goals'])
+        
+        update_sql = "UPDATE club_games SET hosting=%s, own_goals=%s, opponent_goals=%s WHERE game_id=%s"
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(update_sql, (hosting, own_goals, opponent_goals, game_id))
+            conn.commit()
+        return redirect(url_for('club_games'))
+    except Exception as e:
+        return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
+
+
+# ==========================================
+# 2. GAMES (MAÇLAR) CRUD
+# ==========================================
+@app.route('/games', methods=['GET', 'POST'])
+def games():
+    # POST: Yeni Maç Ekleme
+    if request.method == 'POST':
+        try:
+            game_id = int(request.form['game_id'])
+            home_club_id = int(request.form['home_club_id'])
+            away_club_id = int(request.form['away_club_id'])
+            game_date = request.form['game_date']
+            home_club_goals = int(request.form.get('home_club_goals', 0))
+            away_club_goals = int(request.form.get('away_club_goals', 0))
+            
+            insert_sql = """
+                INSERT INTO games (game_id, home_club_id, away_club_id, game_date, home_club_goals, away_club_goals)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            
+            with get_db_connection() as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(insert_sql, (game_id, home_club_id, away_club_id, game_date, home_club_goals, away_club_goals))
+                conn.commit()
+            return redirect(url_for('games'))
+        except Exception as e:
+            return f"<h1>Kayıt Hatası:</h1><p>{e}</p>"
+
+    # GET: Listeleme
+    clubs_sql = "SELECT club_id, name FROM clubs ORDER BY name ASC"
+    select_sql = """
+        SELECT g.game_id, g.home_club_id, g.away_club_id, g.game_date, 
+               g.home_club_goals, g.away_club_goals,
+               hc.name AS home_club_name, ac.name AS away_club_name
+        FROM games g
+        LEFT JOIN clubs hc ON g.home_club_id = hc.club_id
+        LEFT JOIN clubs ac ON g.away_club_id = ac.club_id
+        ORDER BY g.game_date DESC, g.game_id DESC LIMIT 100
+    """
+    
+    games_data = []
+    clubs_data = []
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(clubs_sql)
+                clubs_data = cursor.fetchall()
+                cursor.execute(select_sql)
+                games_data = cursor.fetchall()
+    except Exception as e:
+        return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
+
     return render_template('games.html', games=games_data, clubs=clubs_data)
 
 @app.route('/games/delete/<int:game_id>', methods=['POST'])
 def delete_game(game_id):
     try:
-        delete_sql = "DELETE FROM club_games WHERE game_id = %s"
+        delete_sql = "DELETE FROM games WHERE game_id = %s"
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute(delete_sql, (game_id,))
@@ -96,14 +180,21 @@ def delete_game(game_id):
 def update_game():
     try:
         game_id = int(request.form['game_id'])
-        hosting = request.form['hosting']
-        own_goals = int(request.form['own_goals'])
-        opponent_goals = int(request.form['opponent_goals'])
+        home_club_id = int(request.form['home_club_id'])
+        away_club_id = int(request.form['away_club_id'])
+        game_date = request.form['game_date']
+        home_club_goals = int(request.form.get('home_club_goals', 0))
+        away_club_goals = int(request.form.get('away_club_goals', 0))
         
-        update_sql = "UPDATE club_games SET hosting=%s, own_goals=%s, opponent_goals=%s WHERE game_id=%s"
+        update_sql = """
+            UPDATE games 
+            SET home_club_id=%s, away_club_id=%s, game_date=%s, 
+                home_club_goals=%s, away_club_goals=%s 
+            WHERE game_id=%s
+        """
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(update_sql, (hosting, own_goals, opponent_goals, game_id))
+                cursor.execute(update_sql, (home_club_id, away_club_id, game_date, home_club_goals, away_club_goals, game_id))
             conn.commit()
         return redirect(url_for('games'))
     except Exception as e:
@@ -111,7 +202,7 @@ def update_game():
 
 
 # ==========================================
-# 2. TRANSFERS CRUD
+# 3. TRANSFERS CRUD
 # ==========================================
 @app.route('/transfers', methods=['GET', 'POST'])
 def transfers():
@@ -211,7 +302,7 @@ def get_player(player_id):
 
 
 # ==========================================
-# 3. PLAYERS (OYUNCULAR) CRUD - (DÜZELTİLDİ)
+# 4. PLAYERS (OYUNCULAR) CRUD - (DÜZELTİLDİ)
 # ==========================================
 
 @app.route('/players', methods=['GET', 'POST'])
@@ -307,7 +398,7 @@ def update_player():
 
 
 # ==========================================
-# 4. CLUBS (KULÜPLER) CRUD
+# 5. CLUBS (KULÜPLER) CRUD
 # ==========================================
 
 @app.route('/clubs', methods=['GET', 'POST'])
@@ -388,7 +479,7 @@ def delete_club(club_id):
 
 
 # ==========================================
-# 5. COMPETITIONS (LİGLER/KUPALAR) CRUD
+# 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
 # ==========================================
 
 @app.route('/competitions', methods=['GET', 'POST'])
