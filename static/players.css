@@ -1,0 +1,288 @@
+:root {
+    /* RENK PALETİ */
+    --bg-vapor:       #FAFAFA;  /* Main Background */
+    --bg-card:        #FFFFFF;  /* Card / Table Row Background */
+    --border-mist:    #E4E4E7;  /* Borders */
+    --text-secondary: #71717A;  /* Metadata / Labels */
+    --text-primary:   #18181B;  /* Headers / Scores */
+
+    /* FUNCTIONAL COLORS */
+    --color-success:  #27ae60;  /* Save */
+    --color-danger:   #c0392b;  /* Delete */
+    --color-warning:  #f39c12;  /* Edit / Players Page Accent (Orange) */
+    --color-info:     #3498db;  /* Blue accents */
+    --color-cancel:   #95a5a6;  /* Cancel / No Club Text */
+}
+
+/* Global Reset */
+body {
+    background-color: var(--bg-vapor);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Layout & Container */
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    margin-bottom: 2rem;
+    /* Mapped Orange accent to Warning color */
+    border-bottom: 2px solid var(--color-warning); 
+    padding-bottom: 10px;
+    display: flex;
+    justify-content:center;
+    align-items: center;
+}
+
+.page-title {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Form Card */
+.form-card {
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-mist);
+    margin-bottom: 30px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.section-title {
+    margin-top: 0;
+    color: var(--text-primary);
+}
+
+.player-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+/* Form Groups & Inputs */
+.form-group {
+    flex: 1;
+    min-width: 120px;
+}
+
+.form-group.medium {
+    flex: 1;
+    min-width: 150px;
+}
+
+.form-group.large {
+    flex: 2;
+    min-width: 200px;
+}
+
+.form-group.xlarge {
+    flex: 2;
+    min-width: 250px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.form-input, 
+.form-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-mist);
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus, 
+.form-select:focus {
+    outline: none;
+    border-color: var(--color-warning); /* Using Warning color for focus */
+}
+
+.disabled-input {
+    background: var(--bg-vapor);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.9em;
+}
+
+.btn-save {
+    background-color: var(--color-success);
+}
+
+.btn-edit {
+    background-color: var(--color-warning);
+    margin-right: 5px;
+}
+
+.btn-delete {
+    background-color: var(--color-danger);
+}
+
+.btn-cancel {
+    background-color: var(--color-cancel);
+    margin-right: 5px;
+}
+
+.btn-modal-save {
+    background-color: var(--color-info);
+}
+
+/* Table Styles */
+.table-wrapper h2 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-mist);
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border-mist);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-card);
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-mist);
+}
+
+th {
+    background-color: var(--bg-vapor);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Remove bottom border from last row */
+tr:last-child td {
+    border-bottom: none;
+}
+
+.actions-cell {
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Custom Text Styles */
+.text-player-name {
+    transition: all 0.1s ease-in-out;
+}
+
+.text-player-name:hover {
+    cursor: pointer;
+    transform: scale(1.02);
+    color: var(--color-info);
+}
+
+.text-club {
+    color: var(--text-primary); 
+    font-weight: bold;
+}
+
+.text-no-club {
+    /* Mapped to Cancel color for neutral/inactive state */
+    color: var(--color-cancel); 
+    font-style: italic;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content {
+    background-color: var(--bg-card);
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-mist);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-mist);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.close-btn {
+    cursor: pointer;
+    font-size: 24px;
+    color: var(--text-secondary);
+}
+
+.close-btn:hover {
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    text-align: right;
+    margin-top: 20px;
+}
