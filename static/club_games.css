@@ -24,10 +24,20 @@ th {
 }
 
 td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-mist);
-    color: var(--text-secondary);
-    vertical-align: middle;
+    color: var(--text-primary);
+    text-align: center;
+    align-items: center;
+}
+
+td strong {
+    display: inline-flex;    /* allows image + text to align nicely */
+    align-items: center;     /* vertically centers them */
+    gap: 0.4rem;             /* space between logo and name */
+}
+
+img {
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
 td:first-child {

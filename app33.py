@@ -566,3 +566,13 @@ def delete_competition(competition_id):
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, port=port)
+
+
+#7 SINGLE PLAYER
+@app.route("/players/<int:player_id>")
+def player_page(player_id):
+    # Example DB query (SQLAlchemy style)
+    # player = Player.query.get(player_id)
+
+    # Pass player_id to your template for now
+    return render_template("player.html", player_id=player_id)

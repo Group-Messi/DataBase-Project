@@ -193,6 +193,24 @@ th, td {
     border-bottom: 1px solid var(--border-mist);
 }
 
+td {
+    color: var(--text-primary);
+    text-align: center;
+    align-items: center;
+}
+
+td strong {
+    display: inline-flex;    /* allows image + text to align nicely */
+    align-items: center;     /* vertically centers them */
+    gap: 0.4rem;             /* space between logo and name */
+}
+
+img {
+    width: 1.5rem;
+    size: 1.5rem;
+}
+
+
 th {
     background-color: var(--bg-vapor);
     color: var(--text-secondary);
