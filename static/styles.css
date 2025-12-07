@@ -5,6 +5,14 @@
   --border-mist:    #E4E4E7;  /* Borders */
   --text-secondary: #71717A;  /* Metadata / Labels */
   --text-primary:   #18181B;  /* Headers / Scores */
+
+    /* FUNCTIONAL COLORS (Standardized for buttons/badges) */
+    --color-success:  #27ae60;  /* Save / Home */
+    --color-danger:   #c0392b;  /* Delete */
+    --color-warning:  #f39c12;  /* Edit / Away */
+    --color-info:     #3498db;  /* Blue accents */
+    --color-cancel:   #95a5a6;  /* Cancel buttons */
+
 }
 
 /* FONT : NUNITO */
@@ -15,6 +23,8 @@
     margin: 0;
     padding: 0;
 }
+
+/* LAYOUT.HTML */
 
 body {
     background-color: var(--bg-vapor);
@@ -128,3 +138,216 @@ ul {
     font-size: 0.85rem;
     margin-top: auto;
 }
+
+/* GAMES.HTML */
+
+.games-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+
+
+/* --- 4. CARDS & FORMS --- */
+.add-game-card {
+    background: var(--bg-card); /* Was #f8f9fa */
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-mist); /* Was #e9ecef */
+    margin-bottom: 30px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Added subtle depth */
+}
+
+.card-title {
+    margin-top: 0;
+    color: var(--text-primary);
+}
+
+.game-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.form-group { flex: 1; }
+.form-group.small { flex: 0.5; min-width: 80px; }
+.form-group.medium { min-width: 120px; }
+.form-group.large { min-width: 180px; }
+
+.form-label {
+    display: block;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    color: var(--text-secondary); /* Applied text-secondary */
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-mist); /* Was #ddd */
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--text-secondary); /* darkened border on focus */
+}
+
+/* --- 5. BUTTONS --- */
+.btn {
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    display: inline-block;
+    color: white; /* Text is always white on buttons */
+    transition: opacity 0.2s;
+}
+
+.btn:hover { opacity: 0.9; }
+
+.btn-large { padding: 10px 20px; }
+
+/* Using functional variables now */
+.btn-success { background-color: var(--color-success); }
+.btn-warning { background-color: var(--color-warning); margin-right: 5px; }
+.btn-danger  { background-color: var(--color-danger); }
+.btn-primary { background-color: var(--color-info); }
+.btn-secondary { background-color: var(--color-cancel); margin-right: 5px; }
+
+/* --- 6. TABLE STYLES --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden; /* For rounded corners */
+    border: 1px solid var(--border-mist);
+}
+
+th {
+    background-color: var(--bg-vapor); /* Header slightly darker than body */
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-mist);
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-mist);
+    color: var(--text-primary);
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+}
+
+.games-club-name {
+    display: inline-block;
+    transition: all 0.2s ease-in-out;
+}
+
+.games-club-name:hover {
+    cursor: pointer;
+    font-weight: 900;      
+    transform: scale(1.02);  
+    color: var(--color-info); 
+}
+.club-id-fallback { color: var(--color-danger); }
+
+.score-cell {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: var(--text-primary);
+}
+
+.actions-cell { text-align: right; white-space: nowrap; }
+
+/* --- 7. BADGES --- */
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+/* We create lighter versions of functional colors for badges using opacity/mix 
+   Or hardcode logical pairs if we can't use calc(). 
+   For simplicity, I'll keep the badge styles clean but using our variables for text. */
+.badge-home {
+    background-color: rgba(39, 174, 96, 0.15); /* Light green */
+    color: var(--color-success);
+}
+
+.badge-away {
+    background-color: rgba(243, 156, 18, 0.15); /* Light orange */
+    color: var(--color-warning);
+}
+
+/* --- 8. MODAL --- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* Dimmed backdrop */
+    backdrop-filter: blur(2px); /* Modern frosted glass effect */
+}
+
+.modal-content {
+    background-color: var(--bg-card);
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid var(--border-mist);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-mist);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.close-btn {
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+
+.close-btn:hover { color: var(--text-primary); }
+
+.modal-footer { text-align: right; margin-top: 20px; }
+
+/* Utilities */
+.mb-15 { margin-bottom: 15px; }
+.flex-row { display: flex; gap: 10px; }
+.disabled-input { background: var(--bg-vapor); color: var(--text-secondary); }
+.d-inline { display: inline; }
