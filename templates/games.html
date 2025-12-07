@@ -34,17 +34,24 @@
                     <td>{{ game.game_date }}</td>
                     <td>
                         {% if game.home_club_name %}
-                        <strong>{{ game.home_club_name }}</strong>
+                        <div class="club-cell"> <img src="/static/logos/{{ (game.home_club_id % 19) + 1 }}.png" alt="Logo" class="club-logo-small">
+                            <strong>{{ game.home_club_name }}</strong>
+                        </div>
                         {% else %}
                         ID: {{ game.home_club_id }}
                         {% endif %}
                     </td>
-                    <td style="font-weight: bold; text-align: center;">
+                    
+                    <td style="font-weight: bold;">
                         {{ game.home_club_goals }} - {{ game.away_club_goals }}
                     </td>
+                    
                     <td>
                         {% if game.away_club_name %}
-                        <strong>{{ game.away_club_name }}</strong>
+                        <div class="club-cell">
+                            <img src="/static/logos/{{ (game.away_club_id % 19) + 1 }}.png" alt="Logo" class="club-logo-small">
+                            <strong>{{ game.away_club_name }}</strong>
+                        </div>
                         {% else %}
                         ID: {{ game.away_club_id }}
                         {% endif %}
