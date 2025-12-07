@@ -396,6 +396,31 @@ def update_player():
     except Exception as e:
         return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
 
+@app.route('/players/<int:player_id>')
+def player_page(player_id):
+    try:
+        # SELECT * FROM players WHERE player_id = player_id
+        # Ayrıca kulüp bilgisini de JOIN ile çekiyoruz
+        select_sql = """
+            SELECT p.*, c.name AS club_name, c.stadium_name AS club_stadium
+            FROM players p
+            LEFT JOIN clubs c ON p.current_club_id = c.club_id
+            WHERE p.player_id = %s
+            LIMIT 1
+        """
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(select_sql, (player_id,))
+                player = cursor.fetchone()
+                
+                if not player:
+                    return f"<h1>Oyuncu Bulunamadı</h1><p>Player ID: {player_id} bulunamadı.</p>", 404
+        
+        return render_template('player.html', player=player)
+    except Exception as e:
+        return f"<h1>Hata:</h1><p>{e}</p>", 500
+
 
 # ==========================================
 # 5. CLUBS (KULÜPLER) CRUD
