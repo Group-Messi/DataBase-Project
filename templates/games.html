@@ -73,7 +73,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <!-- <th>ID</th> -->
                     <th>Tarih</th>
                     <th>Ev Sahibi</th>
                     <th class="text-center">Skor</th>
@@ -84,11 +84,12 @@
             <tbody>
                 {% for game in games %}
                 <tr>
-                    <td>{{ game.game_id }}</td>
+                    <!-- <td>{{ game.game_id }}</td> -->
                     <td>{{ game.game_date }}</td>
                     <td>
                         {% if game.home_club_name %}
-                        <strong>{{ game.home_club_name }}</strong>
+                        <strong><img src="/static/logos/{{ (game.home_club_id % 19) + 1 }}.png">{{ game.home_club_name
+                            }}</strong>
                         {% else %}
                         <span class="missing-info">ID: {{ game.home_club_id }}</span>
                         {% endif %}
@@ -98,7 +99,8 @@
                     </td>
                     <td>
                         {% if game.away_club_name %}
-                        <strong>{{ game.away_club_name }}</strong>
+                        <strong><img src="/static/logos/{{ (game.away_club_id % 19) + 1 }}.png">{{ game.away_club_name
+                            }}</strong>
                         {% else %}
                         <span class="missing-info">ID: {{ game.away_club_id }}</span>
                         {% endif %}

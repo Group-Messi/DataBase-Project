@@ -200,6 +200,14 @@ th {
 
 td {
     color: var(--text-primary);
+    text-align: center;
+    align-items: center;
+}
+
+td strong {
+    display: inline-flex;    /* allows image + text to align nicely */
+    align-items: center;     /* vertically centers them */
+    gap: 0.4rem;             /* space between logo and name */
 }
 
 /* Remove bottom border from last row */
@@ -291,4 +299,9 @@ tr:last-child td {
 
 .modal-footer {
     text-align: right;
+}
+
+img {
+    width: 2rem;
+    height: 2rem;
 }
