@@ -1,0 +1,139 @@
+/* Player Detail Page Styles */
+/* Using color palette from styles.css */
+
+.player-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    background-color: var(--bg-vapor);
+    min-height: calc(100vh - 200px);
+}
+
+.player-header {
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-mist);
+    padding-bottom: 1rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: var(--color-info);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: var(--text-primary);
+}
+
+.player-title {
+    color: var(--text-primary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.player-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Player Image */
+.player-image-section {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.player-image {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 2px solid var(--border-mist);
+}
+
+/* Info Sections */
+.info-section {
+    background-color: var(--bg-card);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-mist);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--color-info);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 400;
+}
+
+.info-value.highlight {
+    color: var(--color-success);
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.external-link {
+    color: var(--color-info);
+    text-decoration: none;
+    word-break: break-all;
+    transition: color 0.2s ease;
+}
+
+.external-link:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .player-container {
+        padding: 1rem;
+    }
+
+    .player-title {
+        font-size: 2rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .player-image {
+        max-width: 200px;
+    }
+}
+
