@@ -194,8 +194,20 @@ th {
 
 td {
     color: var(--text-primary);
+    text-align: center;
+    align-items: center;
 }
 
+td strong {
+    display: inline-flex;    /* allows image + text to align nicely */
+    align-items: center;     /* vertically centers them */
+    gap: 0.4rem;             /* space between logo and name */
+}
+
+img {
+    width: 1.5rem;
+    height: 1.5rem;
+}
 /* Remove bottom border from last row to fit rounded corners */
 tr:last-child td {
     border-bottom: none;
