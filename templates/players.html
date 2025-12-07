@@ -44,7 +44,9 @@
                     <td>{{ p.position }}</td>
                     <td>
                         {% if p.club_name %}
-                        <span class="text-club">{{ p.club_name }}</span>
+                        <span class="text-club"><strong><img
+                                    src="/static/logos/{{ (p.current_club_id % 19) + 1 }}.png">{{ p.club_name
+                                }}</strong></span>
                         {% else %}
                         <span class="text-no-club">Free Agent</span>
                         {% endif %}

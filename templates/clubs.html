@@ -58,7 +58,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <!-- <th>ID</th> -->
                     <th>Kulüp</th>
                     <th>Stadyum</th>
                     <th>Lig</th>
@@ -69,8 +69,10 @@
             <tbody>
                 {% for c in clubs %}
                 <tr>
-                    <td>{{ c.club_id }}</td>
-                    <td><strong>{{ c.name }}</strong></td>
+                    <!-- <td>{{ c.club_id }}</td> -->
+                    <td class="club-cell"><strong><img src="/static/logos/{{ (c.club_id % 19) + 1 }}.png">{{ c.name
+                            }}</strong>
+                    </td>
                     <td>{{ c.stadium_name }}</td>
                     <td>
                         {% if c.competition_name %}

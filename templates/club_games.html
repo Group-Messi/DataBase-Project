@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='club_games.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -76,7 +77,10 @@
                     <td>
                         {% if game.club_name %}
                         <div class="games-club-name" data-club-id="{{ game.club_id }}">
-                            <strong>{{ game.club_name }}</strong>
+                            <strong>
+                                <img src="/static/logos/{{ (game.club_id % 19) + 1 }}.png">
+                                {{ game.club_name}}
+                            </strong>
                         </div>
                         {% else %}
                         <span class="club-id-fallback">ID: {{ game.club_id }}</span>
