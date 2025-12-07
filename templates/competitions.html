@@ -5,77 +5,43 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='competitions.css') }}">
 {% endblock %}
 
-
 {% block content %}
 <div class="main-container">
 
     <div class="page-header">
-        <h1 class="page-title">🏆 Competition Yönetimi</h1>
-    </div>
-
-    <div class="form-card">
-        <h3 class="section-title">➕ Yeni Lig/Kupa Ekle</h3>
-        <form action="{{ url_for('competitions_route') }}" method="POST" class="competition-form">
-
-            <div class="form-group">
-                <label class="form-label">Lig Kodu (ID)</label>
-                <input type="text" name="competition_id" required placeholder="TR1" class="form-input">
-            </div>
-
-            <div class="form-group large">
-                <label class="form-label">Lig Adı</label>
-                <input type="text" name="name" required placeholder="Süper Lig" class="form-input">
-            </div>
-
-            <div class="form-group medium">
-                <label class="form-label">Tip</label>
-                <select name="type" class="form-select">
-                    <option value="domestic_league">Yerel Lig</option>
-                    <option value="domestic_cup">Yerel Kupa</option>
-                    <option value="international_cup">Uluslararası</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Ülke ID</label>
-                <input type="number" name="country_id" placeholder="-1" class="form-input">
-            </div>
-
-            <button type="submit" class="btn btn-save">Kaydet</button>
-        </form>
+        <h1 class="page-title">Competitions</h1>
     </div>
 
     <div class="table-wrapper">
-        <h2>📋 Lig Listesi</h2>
+        <h2>Competition List</h2>
+
         {% if competitions|length == 0 %}
-        <p class="empty-state">Henüz kayıt yok.</p>
+        <p class="empty-state">No competitions found.</p>
         {% else %}
         <table>
             <thead>
                 <tr>
-                    <th>Kod (ID)</th>
-                    <th>İsim</th>
-                    <th>Tip</th>
-                    <th>Ülke ID</th>
-                    <th class="actions-cell">İşlemler</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Country ID</th>
+                    <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for c in competitions %}
+                {% for comp in competitions %}
                 <tr>
-                    <td><strong>{{ c.competition_id }}</strong></td>
-                    <td>{{ c.name }}</td>
-                    <td>{{ c.type }}</td>
-                    <td>{{ c.country_id }}</td>
+                    <td>{{ comp.competition_id }}</td>
+                    <td><strong>{{ comp.name }}</strong></td>
+                    <td>{{ comp.type }}</td>
+                    <td>{{ comp.country_id }}</td>
                     <td class="actions-cell">
-                        <button onclick="openCompModal('{{ c.competition_id }}', '{{ c.name }}', '{{ c.type }}')"
-                            class="btn btn-sm btn-edit">
-                            Düzenle
-                        </button>
-                        <form action="{{ url_for('delete_competition', competition_id=c.competition_id) }}"
-                            method="POST" style="display:inline;"
-                            onsubmit="return confirm('Bu ligi silmek istediğine emin misin?');">
-                            <button type="submit" class="btn btn-sm btn-delete">Sil</button>
+                        <button onclick="openEditModal('{{ comp.competition_id }}', '{{ comp.name }}', '{{ comp.type }}')"
+                            class="btn btn-sm btn-edit">Edit</button>
+
+                        <form action="{{ url_for('delete_competition', competition_id=comp.competition_id) }}" method="POST" style="display:inline;"
+                            onsubmit="return confirm('Delete competition {{ comp.name }}?');">
+                            <button type="submit" class="btn btn-sm btn-delete">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -84,59 +50,39 @@
         </table>
         {% endif %}
     </div>
-</div>
 
-<div id="compModal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Ligi Düzenle</h2>
-            <span onclick="closeCompModal()" class="close-btn">&times;</span>
-        </div>
-        <form action="{{ url_for('update_competition') }}" method="POST">
-            <input type="hidden" id="modal_comp_id" name="competition_id">
+    <div class="form-card" style="margin-top: 30px;">
+        <h3 class="section-title">Add New Competition</h3>
 
-            <div style="margin-bottom: 15px;">
-                <label class="form-label">ID (Değiştirilemez):</label>
-                <input type="text" id="modal_comp_id_display" disabled class="form-input disabled-input">
+        <form action="{{ url_for('competitions_route') }}" method="POST" class="player-form">
+            <div class="form-group medium">
+                <label class="form-label">Competition ID</label>
+                <input type="text" name="competition_id" required placeholder="e.g. TR1" class="form-input">
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label class="form-label">İsim:</label>
-                <input type="text" id="modal_name" name="name" required class="form-input">
+            <div class="form-group large">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" required placeholder="Super Lig" class="form-input">
             </div>
 
-            <div style="margin-bottom: 20px;">
-                <label class="form-label">Tip:</label>
-                <select id="modal_type" name="type" class="form-select">
-                    <option value="domestic_league">Yerel Lig</option>
-                    <option value="domestic_cup">Yerel Kupa</option>
-                    <option value="international_cup">Uluslararası</option>
-                </select>
+            <div class="form-group medium">
+                <label class="form-label">Type</label>
+                <input type="text" name="type" placeholder="domestic_league" class="form-input">
             </div>
 
-            <div class="modal-footer">
-                <button type="button" onclick="closeCompModal()" class="btn btn-cancel">İptal</button>
-                <button type="submit" class="btn btn-modal-save">Kaydet</button>
+            <div class="form-group medium">
+                <label class="form-label">Country ID</label>
+                <input type="number" name="country_id" class="form-input">
             </div>
+
+            <button type="submit" class="btn btn-save" style="margin-top: 24px;">Save Competition</button>
         </form>
     </div>
 </div>
 
 <script>
-    function openCompModal(id, name, type) {
-        document.getElementById('compModal').style.display = 'block';
-        document.getElementById('modal_comp_id').value = id;
-        document.getElementById('modal_comp_id_display').value = id;
-        document.getElementById('modal_name').value = name;
-        document.getElementById('modal_type').value = type;
-    }
-    function closeCompModal() {
-        document.getElementById('compModal').style.display = 'none';
-    }
-    window.onclick = function (event) {
-        if (event.target == document.getElementById('compModal')) {
-            closeCompModal();
-        }
+    function openEditModal(id, name, type) {
+        alert("Edit modal logic to be implemented similar to Players page.");
     }
 </script>
 {% endblock %}

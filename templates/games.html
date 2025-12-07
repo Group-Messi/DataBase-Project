@@ -9,115 +9,55 @@
 <div class="main-container">
 
     <div class="page-header">
-        <h1 class="page-title">⚽ Games (Maçlar) Yönetimi</h1>
-    </div>
-
-    <div class="form-card">
-        <h3 class="section-title">➕ Yeni Maç Ekle</h3>
-        <form action="{{ url_for('games') }}" method="POST" class="game-form">
-
-            <div class="form-group">
-                <label class="form-label">Game ID</label>
-                <input type="number" name="game_id" required placeholder="Örn: 1001" class="form-input">
-            </div>
-
-            <div class="form-group large">
-                <label class="form-label">Ev Sahibi Kulüp</label>
-                <select name="home_club_id" required class="form-select">
-                    <option value="" disabled selected>Kulüp seçin...</option>
-                    {% for club in clubs %}
-                    <option value="{{ club.club_id }}">
-                        {{ club.name }} (ID: {{ club.club_id }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group large">
-                <label class="form-label">Deplasman Kulüp</label>
-                <select name="away_club_id" required class="form-select">
-                    <option value="" disabled selected>Kulüp seçin...</option>
-                    {% for club in clubs %}
-                    <option value="{{ club.club_id }}">
-                        {{ club.name }} (ID: {{ club.club_id }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group medium">
-                <label class="form-label">Maç Tarihi</label>
-                <input type="date" name="game_date" required class="form-input">
-            </div>
-
-            <div class="form-group tiny">
-                <label class="form-label">Ev Sahibi Gol</label>
-                <input type="number" name="home_club_goals" value="0" min="0" class="form-input">
-            </div>
-
-            <div class="form-group tiny">
-                <label class="form-label">Deplasman Gol</label>
-                <input type="number" name="away_club_goals" value="0" min="0" class="form-input">
-            </div>
-
-            <button type="submit" class="btn btn-save">Kaydet</button>
-        </form>
+        <h1 class="page-title">Games Management</h1>
     </div>
 
     <div class="table-wrapper">
-        <h2>📋 Kayıtlı Maçlar</h2>
+        <h2>Match List</h2>
 
         {% if games|length == 0 %}
-        <p class="empty-state">Henüz kayıtlı maç bulunamadı.</p>
+        <p class="empty-state">No matches found.</p>
         {% else %}
         <table>
             <thead>
                 <tr>
-                    <!-- <th>ID</th> -->
-                    <th>Tarih</th>
-                    <th>Ev Sahibi</th>
-                    <th class="text-center">Skor</th>
-                    <th>Deplasman</th>
-                    <th class="actions-cell">İşlemler</th>
+                    <th>Date</th>
+                    <th>Home Club</th>
+                    <th>Score</th>
+                    <th>Away Club</th>
+                    <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for game in games %}
                 <tr>
-                    <!-- <td>{{ game.game_id }}</td> -->
                     <td>{{ game.game_date }}</td>
                     <td>
                         {% if game.home_club_name %}
-                        <strong><img src="/static/logos/{{ (game.home_club_id % 19) + 1 }}.png">{{ game.home_club_name
-                            }}</strong>
+                        <strong>{{ game.home_club_name }}</strong>
                         {% else %}
-                        <span class="missing-info">ID: {{ game.home_club_id }}</span>
+                        ID: {{ game.home_club_id }}
                         {% endif %}
                     </td>
-                    <td class="score-cell">
+                    <td style="font-weight: bold; text-align: center;">
                         {{ game.home_club_goals }} - {{ game.away_club_goals }}
                     </td>
                     <td>
                         {% if game.away_club_name %}
-                        <strong><img src="/static/logos/{{ (game.away_club_id % 19) + 1 }}.png">{{ game.away_club_name
-                            }}</strong>
+                        <strong>{{ game.away_club_name }}</strong>
                         {% else %}
-                        <span class="missing-info">ID: {{ game.away_club_id }}</span>
+                        ID: {{ game.away_club_id }}
                         {% endif %}
                     </td>
                     <td class="actions-cell">
-                        <button
-                            onclick="openEditModal('{{ game.game_id }}', '{{ game.home_club_id }}', '{{ game.away_club_id }}', '{{ game.game_date }}', '{{ game.home_club_goals }}', '{{ game.away_club_goals }}')"
+                        <button onclick="openEditModal('{{ game.game_id }}', '{{ game.home_club_id }}', '{{ game.away_club_id }}', '{{ game.game_date }}', '{{ game.home_club_goals }}', '{{ game.away_club_goals }}')"
                             class="btn btn-sm btn-edit">
-                            Düzenle
+                            Edit
                         </button>
 
-                        <form action="{{ url_for('delete_game', game_id=game.game_id) }}" method="POST"
-                            style="display:inline;"
-                            onsubmit="return confirm('Bu maçı silmek istediğinize emin misiniz? (ID: {{ game.game_id }})');">
-                            <button type="submit" class="btn btn-sm btn-delete">
-                                Sil
-                            </button>
+                        <form action="{{ url_for('delete_game', game_id=game.game_id) }}" method="POST" style="display:inline;"
+                            onsubmit="return confirm('Are you sure you want to delete match ID {{ game.game_id }}?');">
+                            <button type="submit" class="btn btn-sm btn-delete">Delete</button>
                         </form>
                     </td>
                 </tr>
@@ -126,88 +66,124 @@
         </table>
         {% endif %}
     </div>
+
+    <div class="form-card" style="margin-top: 30px;">
+        <h3 class="section-title">Add New Match</h3>
+
+        <form action="{{ url_for('games') }}" method="POST" class="player-form">
+            <div class="form-group medium">
+                <label class="form-label">Game ID</label>
+                <input type="number" name="game_id" required placeholder="e.g. 202301" class="form-input">
+            </div>
+
+            <div class="form-group medium">
+                <label class="form-label">Date</label>
+                <input type="date" name="game_date" required class="form-input">
+            </div>
+
+            <div class="form-group large">
+                <label class="form-label">Home Club</label>
+                <select name="home_club_id" required class="form-select">
+                    <option value="" disabled selected>Select Home Club...</option>
+                    {% for club in clubs %}
+                    <option value="{{ club.club_id }}">{{ club.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group large">
+                <label class="form-label">Away Club</label>
+                <select name="away_club_id" required class="form-select">
+                    <option value="" disabled selected>Select Away Club...</option>
+                    {% for club in clubs %}
+                    <option value="{{ club.club_id }}">{{ club.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group small">
+                <label class="form-label">Home Score</label>
+                <input type="number" name="home_club_goals" value="0" class="form-input">
+            </div>
+
+            <div class="form-group small">
+                <label class="form-label">Away Score</label>
+                <input type="number" name="away_club_goals" value="0" class="form-input">
+            </div>
+
+            <button type="submit" class="btn btn-save" style="margin-top: 24px;">Save Match</button>
+        </form>
+    </div>
 </div>
 
 <div id="editModal" class="modal-overlay">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Maçı Düzenle</h2>
+            <h2>Edit Match</h2>
             <span onclick="closeEditModal()" class="close-btn">&times;</span>
         </div>
-
         <form action="{{ url_for('update_game') }}" method="POST">
             <input type="hidden" id="modal_game_id" name="game_id">
-
+            
             <div style="margin-bottom: 15px;">
-                <label class="form-label" style="font-weight: bold;">Game ID:</label>
+                <label class="form-label">Game ID (Locked)</label>
                 <input type="text" id="modal_game_id_display" disabled class="form-input disabled-input">
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label class="form-label">Ev Sahibi Kulüp:</label>
-                <select id="modal_home_club_id" name="home_club_id" required class="form-select">
-                    <option value="" disabled>Kulüp seçin...</option>
-                    {% for club in clubs %}
-                    <option value="{{ club.club_id }}">{{ club.name }} (ID: {{ club.club_id }})</option>
-                    {% endfor %}
-                </select>
+                <label class="form-label">Date</label>
+                <input type="date" id="modal_game_date" name="game_date" class="form-input">
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label class="form-label">Deplasman Kulüp:</label>
-                <select id="modal_away_club_id" name="away_club_id" required class="form-select">
-                    <option value="" disabled>Kulüp seçin...</option>
-                    {% for club in clubs %}
-                    <option value="{{ club.club_id }}">{{ club.name }} (ID: {{ club.club_id }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label class="form-label">Maç Tarihi:</label>
-                <input type="date" id="modal_game_date" name="game_date" required class="form-input">
-            </div>
-
-            <div class="modal-row">
-                <div style="flex: 1;">
-                    <label class="form-label">Ev Sahibi Gol:</label>
-                    <input type="number" id="modal_home_club_goals" name="home_club_goals" min="0" class="form-input">
+            <div style="display: flex; gap: 10px;">
+                <div style="flex:1;">
+                    <label class="form-label">Home Club ID</label>
+                    <input type="number" id="modal_home_club_id" name="home_club_id" class="form-input">
                 </div>
-                <div style="flex: 1;">
-                    <label class="form-label">Deplasman Gol:</label>
-                    <input type="number" id="modal_away_club_goals" name="away_club_goals" min="0" class="form-input">
+                <div style="flex:1;">
+                    <label class="form-label">Away Club ID</label>
+                    <input type="number" id="modal_away_club_id" name="away_club_id" class="form-input">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <div style="flex:1;">
+                    <label class="form-label">Home Goals</label>
+                    <input type="number" id="modal_home_goals" name="home_club_goals" class="form-input">
+                </div>
+                <div style="flex:1;">
+                    <label class="form-label">Away Goals</label>
+                    <input type="number" id="modal_away_goals" name="away_club_goals" class="form-input">
                 </div>
             </div>
 
             <div class="modal-footer">
-                <button type="button" onclick="closeEditModal()" class="btn btn-cancel">İptal</button>
-                <button type="submit" class="btn btn-modal-save">Değişiklikleri Kaydet</button>
+                <button type="button" onclick="closeEditModal()" class="btn btn-cancel">Cancel</button>
+                <button type="submit" class="btn btn-modal-save">Save Changes</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-    function openEditModal(id, homeClubId, awayClubId, gameDate, homeGoals, awayGoals) {
+    function openEditModal(id, homeId, awayId, date, homeGoals, awayGoals) {
         document.getElementById('editModal').style.display = 'block';
         document.getElementById('modal_game_id').value = id;
         document.getElementById('modal_game_id_display').value = id;
-        document.getElementById('modal_home_club_id').value = homeClubId;
-        document.getElementById('modal_away_club_id').value = awayClubId;
-        document.getElementById('modal_game_date').value = gameDate;
-        document.getElementById('modal_home_club_goals').value = homeGoals;
-        document.getElementById('modal_away_club_goals').value = awayGoals;
+        document.getElementById('modal_home_club_id').value = homeId;
+        document.getElementById('modal_away_club_id').value = awayId;
+        document.getElementById('modal_game_date').value = date;
+        document.getElementById('modal_home_goals').value = homeGoals;
+        document.getElementById('modal_away_goals').value = awayGoals;
     }
 
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
     }
 
-    // Modal dışına tıklayınca kapatma
     window.onclick = function (event) {
-        var modal = document.getElementById('editModal');
-        if (event.target == modal) {
-            modal.style.display = "none";
+        if (event.target == document.getElementById('editModal')) {
+            closeEditModal();
         }
     }
 </script>
