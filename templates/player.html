@@ -6,191 +6,145 @@
 {% endblock %}
 
 {% block content %}
-<div class="player-container">
-    <div class="player-header">
-        <a href="{{ url_for('players') }}" class="back-link">← Back to Players</a>
-        <h1 class="player-title">{{ player.name or 'Unknown Player' }}</h1>
+<div class="profile-container">
+
+    <!-- Navigation -->
+    <div class="nav-area">
+        <a href="{{ url_for('players') }}" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Players
+        </a>
     </div>
 
-    <div class="player-content">
-        <!-- Oyuncu Resmi -->
-        {% if player.image_url %}
-        <div class="player-image-section">
-            <img src="{{ player.image_url }}" alt="{{ player.name }}" class="player-image" onerror="this.style.display='none'">
-        </div>
-        {% endif %}
+    <div class="profile-card">
 
-        <!-- Temel Bilgiler -->
-        <div class="info-section">
-            <h2 class="section-title">Basic Information</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Player ID:</span>
-                    <span class="info-value">{{ player.player_id }}</span>
-                </div>
-                {% if player.first_name %}
-                <div class="info-item">
-                    <span class="info-label">First Name:</span>
-                    <span class="info-value">{{ player.first_name }}</span>
-                </div>
-                {% endif %}
-                {% if player.last_name %}
-                <div class="info-item">
-                    <span class="info-label">Last Name:</span>
-                    <span class="info-value">{{ player.last_name }}</span>
-                </div>
-                {% endif %}
-                {% if player.player_code %}
-                <div class="info-item">
-                    <span class="info-label">Player Code:</span>
-                    <span class="info-value">{{ player.player_code }}</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Kişisel Bilgiler -->
-        <div class="info-section">
-            <h2 class="section-title">Personal Information</h2>
-            <div class="info-grid">
-                {% if player.date_of_birth %}
-                <div class="info-item">
-                    <span class="info-label">Date of Birth:</span>
-                    <span class="info-value">{{ player.date_of_birth }}</span>
-                </div>
-                {% endif %}
-                {% if player.country_of_birth %}
-                <div class="info-item">
-                    <span class="info-label">Country of Birth:</span>
-                    <span class="info-value">{{ player.country_of_birth }}</span>
-                </div>
-                {% endif %}
-                {% if player.city_of_birth %}
-                <div class="info-item">
-                    <span class="info-label">City of Birth:</span>
-                    <span class="info-value">{{ player.city_of_birth }}</span>
-                </div>
-                {% endif %}
-                {% if player.country_of_citizenship %}
-                <div class="info-item">
-                    <span class="info-label">Citizenship:</span>
-                    <span class="info-value">{{ player.country_of_citizenship }}</span>
-                </div>
-                {% endif %}
-                {% if player.height_in_cm %}
-                <div class="info-item">
-                    <span class="info-label">Height:</span>
-                    <span class="info-value">{{ player.height_in_cm }} cm</span>
-                </div>
-                {% endif %}
-                {% if player.foot %}
-                <div class="info-item">
-                    <span class="info-label">Preferred Foot:</span>
-                    <span class="info-value">{{ player.foot }}</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Futbol Bilgileri -->
-        <div class="info-section">
-            <h2 class="section-title">Football Information</h2>
-            <div class="info-grid">
-                {% if player.position %}
-                <div class="info-item">
-                    <span class="info-label">Position:</span>
-                    <span class="info-value">{{ player.position }}</span>
-                </div>
-                {% endif %}
-                {% if player.sub_position %}
-                <div class="info-item">
-                    <span class="info-label">Sub Position:</span>
-                    <span class="info-value">{{ player.sub_position }}</span>
-                </div>
-                {% endif %}
-                {% if player.current_club_name %}
-                <div class="info-item">
-                    <span class="info-label">Current Club:</span>
-                    <span class="info-value">{{ player.current_club_name }}</span>
-                </div>
-                {% elif player.current_club_id %}
-                <div class="info-item">
-                    <span class="info-label">Current Club ID:</span>
-                    <span class="info-value">{{ player.current_club_id }}</span>
-                </div>
+        <!-- SECTION 1: Photo + Name + Surname -->
+        <header class="profile-header">
+            <div class="avatar-wrapper">
+                {% if player.image_url %}
+                <img src="{{ player.image_url }}" alt="{{ player.name }}" class="avatar"
+                    onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
                 {% else %}
-                <div class="info-item">
-                    <span class="info-label">Current Club:</span>
-                    <span class="info-value">Free Agent</span>
-                </div>
-                {% endif %}
-                {% if player.club_name %}
-                <div class="info-item">
-                    <span class="info-label">Club Name:</span>
-                    <span class="info-value">{{ player.club_name }}</span>
-                </div>
-                {% endif %}
-                {% if player.club_stadium %}
-                <div class="info-item">
-                    <span class="info-label">Club Stadium:</span>
-                    <span class="info-value">{{ player.club_stadium }}</span>
-                </div>
-                {% endif %}
-                {% if player.last_season %}
-                <div class="info-item">
-                    <span class="info-label">Last Season:</span>
-                    <span class="info-value">{{ player.last_season }}</span>
-                </div>
-                {% endif %}
-                {% if player.contract_expiration_date %}
-                <div class="info-item">
-                    <span class="info-label">Contract Expiration:</span>
-                    <span class="info-value">{{ player.contract_expiration_date }}</span>
-                </div>
+                <div class="avatar-placeholder">{{ player.first_name[:1] }}{{ player.last_name[:1] }}</div>
                 {% endif %}
             </div>
+            <div class="header-info">
+                <h1 class="player-name">
+                    <span class="first-name">{{ player.first_name }}</span>
+                    <span class="last-name">{{ player.last_name or '' }}</span>
+                </h1>
+            </div>
+        </header>
+
+        <div class="profile-grid">
+
+            <!-- SECTION 2: Date of Birth + Country -->
+            <section class="info-group">
+                <h3 class="group-title">Personal Details</h3>
+                <div class="group-content">
+                    <div class="data-point">
+                        <span class="label">Date of Birth</span>
+                        <span class="value">{{ player.date_of_birth or 'N/A' }}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Country of Birth</span>
+                        <span class="value flag-value">
+                            {{ player.country_of_birth or 'Unknown' }}
+                        </span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Citizenship</span>
+                        <span class="value">{{ player.country_of_citizenship or '-' }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Position + Preferred Foot -->
+            <section class="info-group">
+                <h3 class="group-title">Technical Profile</h3>
+                <div class="group-content">
+                    <div class="data-point">
+                        <span class="label">Main Position</span>
+                        <span class="value highlight-text">{{ player.position or 'N/A' }}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Sub Position</span>
+                        <span class="value">{{ player.sub_position or '-' }}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Preferred Foot</span>
+                        <span class="value capitalize">{{ player.foot or 'Unknown' }}</span>
+                    </div>
+                    {% if player.height_in_cm %}
+                    <div class="data-point">
+                        <span class="label">Height</span>
+                        <span class="value">{{ player.height_in_cm }} cm</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <!-- SECTION 4: Current Club + Contract -->
+            <section class="info-group">
+                <h3 class="group-title">Club & Contract</h3>
+                <div class="group-content">
+                    <div class="data-point full-width">
+                        <span class="label">Current Club</span>
+                        <span class="value club-name">
+                            {{ player.current_club_name or player.club_name or 'Free Agent' }}
+                        </span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Contract Expires</span>
+                        <!-- Displaying full date, assuming logic filters for year if strictly needed -->
+                        <span class="value badge-warning">
+                            {% if player.contract_expiration_date %}
+                            {% set date_str = player.contract_expiration_date|string %}
+                            {% set year = date_str[:4] %}
+                            {% set month = date_str[5:7] %}
+                            {% set months = {'01':'January', '02':'February', '03':'March', '04':'April', '05':'May',
+                            '06':'June', '07':'July', '08':'August', '09':'September', '10':'October', '11':'November',
+                            '12':'December'} %}
+                            {{ months[month] if month in months else month }} {{ year }}
+                            {% else %}
+                            N/A
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: Market Value -->
+            <section class="info-group">
+                <h3 class="group-title">Market Value</h3>
+                <div class="group-content">
+                    <div class="data-point">
+                        <span class="label">Current Value</span>
+                        <span class="value money-primary">
+                            {% if player.market_value_in_eur %}
+                            €{{ "{:,.0f}".format(player.market_value_in_eur) }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Highest Value</span>
+                        <span class="value money-secondary">
+                            {% if player.highest_market_value_in_eur %}
+                            €{{ "{:,.0f}".format(player.highest_market_value_in_eur) }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <!-- Finansal Bilgiler -->
-        <div class="info-section">
-            <h2 class="section-title">Market Value</h2>
-            <div class="info-grid">
-                {% if player.market_value_in_eur %}
-                <div class="info-item">
-                    <span class="info-label">Current Market Value:</span>
-                    <span class="info-value highlight">{{ "{:,.0f}".format(player.market_value_in_eur) }} €</span>
-                </div>
-                {% endif %}
-                {% if player.highest_market_value_in_eur %}
-                <div class="info-item">
-                    <span class="info-label">Highest Market Value:</span>
-                    <span class="info-value highlight">{{ "{:,.0f}".format(player.highest_market_value_in_eur) }} €</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Diğer Bilgiler -->
-        {% if player.url or player.current_club_domestic_competition_id %}
-        <div class="info-section">
-            <h2 class="section-title">Additional Information</h2>
-            <div class="info-grid">
-                {% if player.url %}
-                <div class="info-item">
-                    <span class="info-label">Profile URL:</span>
-                    <span class="info-value"><a href="{{ player.url }}" target="_blank" class="external-link">{{ player.url }}</a></span>
-                </div>
-                {% endif %}
-                {% if player.current_club_domestic_competition_id %}
-                <div class="info-item">
-                    <span class="info-label">Competition ID:</span>
-                    <span class="info-value">{{ player.current_club_domestic_competition_id }}</span>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
-

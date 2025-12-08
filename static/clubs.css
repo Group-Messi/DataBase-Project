@@ -194,7 +194,7 @@ th {
 
 td {
     color: var(--text-primary);
-    text-align: center;
+    text-align: left;
     align-items: center;
 }
 
