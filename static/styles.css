@@ -61,7 +61,7 @@ ul {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 ;
 }
 
 .mb-15 { margin-bottom: 15px; }
@@ -76,15 +76,17 @@ ul {
     position: sticky;
     top: 0;
     z-index: 100;
-    padding: 2%;
+    padding: 1.5% 0% 1.5% 0%;
     display: flex;
     align-items: center;
+    gap: 5;
 }
 
 .nav-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    row-gap: 10rem;
 }
 
 .logo {

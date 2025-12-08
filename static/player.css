@@ -1,139 +1,248 @@
-/* Player Detail Page Styles */
-/* Using color palette from styles.css */
+/* --- Variables --- */
+:root {
+    /* Color Palette */
+    --bg-vapor:       #FAFAFA;
+    --bg-card:        #FFFFFF;
+    --border-mist:    #E4E4E7;
+    --text-secondary: #71717A;
+    --text-primary:   #18181B;
 
-.player-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
+    /* Functional Colors */
+    --color-success:  #27ae60;
+    --color-danger:   #c0392b;
+    --color-warning:  #f39c12;
+    --color-info:     #3498db;
+    --color-cancel:   #95a5a6;
+    
+    /* Spacing & Radii */
+    --radius-md: 12px;
+    --radius-full: 9999px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* --- Layout Container --- */
+.profile-container {
     background-color: var(--bg-vapor);
-    min-height: calc(100vh - 200px);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
 }
 
-.player-header {
-    margin-bottom: 2rem;
-    border-bottom: 2px solid var(--border-mist);
-    padding-bottom: 1rem;
+/* --- Navigation --- */
+.nav-area {
+    max-width: 800px;
+    margin: 0 auto 1.5rem auto;
 }
 
-.back-link {
-    display: inline-block;
-    margin-bottom: 1rem;
-    color: var(--color-info);
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     text-decoration: none;
+    color: var(--text-secondary);
     font-weight: 500;
+    font-size: 0.9rem;
     transition: color 0.2s ease;
 }
 
-.back-link:hover {
+.btn-back:hover {
     color: var(--text-primary);
 }
 
-.player-title {
-    color: var(--text-primary);
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0;
+/* --- Main Card --- */
+.profile-card {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-mist);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
 }
 
-.player-content {
+/* --- Section 1: Header (Photo + Name) --- */
+.profile-header {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-}
-
-/* Player Image */
-.player-image-section {
+    align-items: center;
+    padding: 3rem 2rem;
+    border-bottom: 1px solid var(--border-mist);
+    background: linear-gradient(to bottom, #fff, #fafafa);
     text-align: center;
-    margin-bottom: 1rem;
 }
 
-.player-image {
-    max-width: 300px;
-    width: 100%;
+.avatar-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.avatar {
+    width: 140px;
     height: auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 2px solid var(--border-mist);
+    border-radius: 10%;
+    object-fit:contain;
+    border: 4px solid white;
+    box-shadow: var(--shadow-md);
 }
 
-/* Info Sections */
-.info-section {
+.avatar-placeholder {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background-color: var(--border-mist);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.player-name {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+.player-name .first-name {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.player-id-badge {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    background-color: var(--bg-vapor);
+    border: 1px solid var(--border-mist);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: monospace;
+}
+
+/* --- Grid System for Data Groups --- */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Mobile first */
+    gap: 1px; /* Gap acts as border due to bg color trick below */
+    background-color: var(--border-mist); /* Creates internal borders */
+}
+
+@media (min-width: 640px) {
+    .profile-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- Info Groups --- */
+.info-group {
     background-color: var(--bg-card);
     padding: 1.5rem;
-    border-radius: 8px;
-    border: 1px solid var(--border-mist);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.section-title {
-    color: var(--text-primary);
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 0 0 1.5rem 0;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--color-info);
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-.info-item {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
 }
 
-.info-label {
-    color: var(--text-secondary);
-    font-size: 0.875rem;
-    font-weight: 500;
+.group-title {
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.info-value {
-    color: var(--text-primary);
-    font-size: 1rem;
-    font-weight: 400;
-}
-
-.info-value.highlight {
-    color: var(--color-success);
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
     font-weight: 600;
-    font-size: 1.125rem;
+}
+
+.group-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+/* --- Data Points --- */
+.data-point {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 40%; /* Auto size */
+}
+
+.data-point.full-width {
+    flex: 1 1 100%;
+}
+
+.label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* --- Specific Value Styling --- */
+.capitalize {
+    text-transform: capitalize;
+}
+
+.highlight-text {
+    color: var(--color-info);
+}
+
+.badge-warning {
+    display: inline-block;
+    color: var(--color-warning);
+}
+
+.money-primary {
+    color: var(--color-success);
+    font-family: 'Courier New', monospace; /* Tabular feel for numbers */
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.money-secondary {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.club-name {
+    font-size: 1.1rem;
+}
+
+/* --- Footer --- */
+.profile-footer {
+    background-color: var(--bg-vapor);
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid var(--border-mist);
 }
 
 .external-link {
+    font-size: 0.85rem;
     color: var(--color-info);
     text-decoration: none;
-    word-break: break-all;
-    transition: color 0.2s ease;
+    font-weight: 500;
 }
 
 .external-link:hover {
-    color: var(--text-primary);
     text-decoration: underline;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .player-container {
-        padding: 1rem;
+/* --- Desktop Tweaks --- */
+@media (min-width: 768px) {
+    .profile-header {
+        flex-direction: row;
+        text-align: left;
+        padding: 3rem 4rem;
+        gap: 2rem;
     }
 
-    .player-title {
-        font-size: 2rem;
-    }
-
-    .info-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .player-image {
-        max-width: 200px;
+    .avatar-wrapper {
+        margin-bottom: 0;
     }
 }
-
