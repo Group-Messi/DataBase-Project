@@ -34,7 +34,7 @@ body {
     border-bottom: 2px solid var(--color-info); 
     padding-bottom: 10px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
 }
 
@@ -58,32 +58,19 @@ body {
     color: var(--text-primary);
 }
 
-.game-form {
+.player-form {
     display: flex;
-    gap: 10px;
+    flex-direction: column; /* DİKEY */
+    gap: 15px;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: stretch;
 }
 
 /* Form Groups & Sizes */
-.form-group {
-    flex: 1;
-    min-width: 120px;
-}
-
-.form-group.large {
-    flex: 1;
-    min-width: 180px;
-}
-
-.form-group.medium {
-    flex: 1;
-    min-width: 150px;
-}
-
-.form-group.tiny {
-    flex: 0.5;
-    min-width: 80px;
+.form-group, .form-group.medium, .form-group.large, .form-group.tiny {
+    flex: none;
+    width: 100%;
+    min-width: auto;
 }
 
 .form-label {
@@ -91,13 +78,13 @@ body {
     font-size: 0.9em;
     margin-bottom: 5px;
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .form-input, 
 .form-select {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     border: 1px solid var(--border-mist);
     background-color: var(--bg-card);
     color: var(--text-primary);
@@ -142,6 +129,9 @@ body {
 
 .btn-save {
     background-color: var(--color-success);
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
 }
 
 .btn-edit {
