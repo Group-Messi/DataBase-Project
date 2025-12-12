@@ -80,9 +80,63 @@
     </div>
 </div>
 
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Competition</h2>
+            <span onclick="closeEditModal()" class="close-btn">&times;</span>
+        </div>
+
+        <form action="{{ url_for('update_competition') }}" method="POST">
+            <input type="hidden" id="modal_comp_id" name="competition_id">
+
+            <div style="margin-bottom: 15px;">
+                <label class="form-label">Competition ID (Locked)</label>
+                <input type="text" id="modal_comp_id_display" disabled class="form-input disabled-input">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label class="form-label">Name</label>
+                <input type="text" id="modal_name" name="name" required class="form-input">
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label class="form-label">Type</label>
+                <input type="text" id="modal_type" name="type" required class="form-input">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" onclick="closeEditModal()" class="btn btn-cancel">Cancel</button>
+                <button type="submit" class="btn btn-modal-save">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    // Tablodaki Edit butonuna basılınca çalışır
     function openEditModal(id, name, type) {
-        alert("Edit modal logic to be implemented similar to Players page.");
+        document.getElementById('editModal').style.display = 'block';
+        
+        // Verileri doldur
+        document.getElementById('modal_comp_id').value = id;
+        document.getElementById('modal_comp_id_display').value = id;
+        document.getElementById('modal_name').value = name;
+        
+        // Type bazen 'None' gelebilir, kontrol edelim
+        document.getElementById('modal_type').value = (type && type !== 'None') ? type : '';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    // Dışarı tıklayınca kapat
+    window.onclick = function (event) {
+        var modal = document.getElementById('editModal');
+        if (event.target == modal) {
+            closeEditModal();
+        }
     }
 </script>
 {% endblock %}

@@ -134,6 +134,7 @@ tr:last-child td { border-bottom: none; }
 } /* Buton tam boy */
 .btn-edit { background-color: var(--color-warning); margin-right: 5px; }
 .btn-delete { background-color: var(--color-danger); }
+.btn-modal-save { background-color: var(--color-success); } /* YEŞİL */
 
 .form-input:focus, .form-select:focus {
     outline: none;

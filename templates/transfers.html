@@ -128,17 +128,158 @@
     </div>
 </div>
 
-<script>
-function updatePlayerName() {
-    var select = document.getElementById('playerSelect');
-    var name = select.options[select.selectedIndex].getAttribute('data-name');
-    document.getElementById('hiddenPlayerName').value = name;
-}
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Transfer</h2>
+            <span onclick="closeEditModal()" class="close-btn">&times;</span>
+        </div>
 
-// Modal functions would go here (Simplified for brevity as logic is same as others)
-function openEditModal(id, pid, date, fromId, toId, season, pname) {
-    // Implement similar to other pages logic
-    alert("Edit feature needs modal implementation similar to Players page.");
-}
+        <form action="{{ url_for('update_transfer') }}" method="POST">
+            <input type="hidden" id="modal_transfer_id" name="transfer_id">
+            
+            <div style="margin-bottom: 15px;">
+                <label class="form-label">Transfer ID (Locked)</label>
+                <input type="text" id="modal_transfer_id_display" disabled class="form-input disabled-input">
+            </div>
+
+            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
+                <label class="form-label" style="font-weight: bold;">Player Selection</label>
+                
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
+                    <div style="flex: 1;">
+                        <input type="number" id="modal_player_id_input" name="player_id" class="form-input" placeholder="Enter Player ID">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-edit" onclick="checkPlayerName()">Check Name</button>
+                </div>
+                
+                <div id="player_name_display" style="font-size: 0.95em; color: #2c3e50; font-weight: 600; min-height: 20px;">
+                    </div>
+                
+                <input type="hidden" id="modal_player_name" name="player_name">
+            </div>
+            <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="modal_transfer_date" name="transfer_date" class="form-input">
+                </div>
+                <div style="flex: 1;">
+                    <label class="form-label">Season</label>
+                    <input type="text" id="modal_transfer_season" name="transfer_season" class="form-input">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label class="form-label">From Club</label>
+                <select id="modal_from_club_id" name="from_club_id" class="form-select">
+                    <option value="">Unknown</option>
+                    {% for c in clubs %}
+                    <option value="{{ c.club_id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label class="form-label">To Club</label>
+                <select id="modal_to_club_id" name="to_club_id" class="form-select">
+                    <option value="">Unknown</option>
+                    {% for c in clubs %}
+                    <option value="{{ c.club_id }}">{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" onclick="closeEditModal()" class="btn btn-cancel">Cancel</button>
+                <button type="submit" class="btn btn-modal-save">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // --- API ile Oyuncu İsmi Çekme ---
+    function checkPlayerName() {
+        var pid = document.getElementById('modal_player_id_input').value;
+        var displayDiv = document.getElementById('player_name_display');
+        var hiddenInput = document.getElementById('modal_player_name');
+
+        if (!pid) {
+            displayDiv.innerHTML = '<span style="color:red;">Please enter an ID first.</span>';
+            return;
+        }
+
+        displayDiv.innerHTML = '<span style="color:gray;">Checking...</span>';
+
+        // Backend'deki /api/player/<id> rotasına istek atıyoruz
+        fetch('/api/player/' + pid)
+            .then(response => {
+                if (!response.ok) throw new Error('Not found');
+                return response.json();
+            })
+            .then(data => {
+                if (data.name) {
+                    displayDiv.innerHTML = '<span style="color:green;">✓ Found: ' + data.name + '</span>';
+                    hiddenInput.value = data.name; // Gizli inputa ismi yaz
+                } else {
+                    displayDiv.innerHTML = '<span style="color:red;">Player not found!</span>';
+                    hiddenInput.value = '';
+                }
+            })
+            .catch(error => {
+                displayDiv.innerHTML = '<span style="color:red;">Invalid Player ID</span>';
+                hiddenInput.value = '';
+            });
+    }
+
+    // --- Modal Açma ---
+    function openEditModal(id, pid, date, fromId, toId, season, pname) {
+        document.getElementById('editModal').style.display = 'block';
+        
+        // ID ve Tarih alanlarını doldur
+        document.getElementById('modal_transfer_id').value = id;
+        document.getElementById('modal_transfer_id_display').value = id;
+        document.getElementById('modal_transfer_date').value = date;
+        document.getElementById('modal_transfer_season').value = (season && season !== 'None') ? season : '';
+
+        // Oyuncu Bilgilerini Doldur
+        document.getElementById('modal_player_id_input').value = pid;
+        document.getElementById('modal_player_name').value = pname;
+        
+        // Mevcut ismi ekrana yaz (Kontrol etmeye gerek kalmasın diye)
+        var displayDiv = document.getElementById('player_name_display');
+        if(pname && pname !== 'None') {
+            displayDiv.innerHTML = '<span>Current: ' + pname + '</span>';
+        } else {
+            displayDiv.innerHTML = '';
+        }
+
+        // Kulüp seçimleri
+        document.getElementById('modal_from_club_id').value = (fromId && fromId !== 'None') ? fromId : '';
+        document.getElementById('modal_to_club_id').value = (toId && toId !== 'None') ? toId : '';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        // Modalı temizle
+        document.getElementById('player_name_display').innerHTML = '';
+    }
+
+    // Dışarı tıklayınca kapat
+    window.onclick = function (event) {
+        var modal = document.getElementById('editModal');
+        if (event.target == modal) {
+            closeEditModal();
+        }
+    }
+    
+    // Create formundaki oyuncu seçimi (Eski fonksiyonu koruyoruz)
+    function updatePlayerName() {
+        var select = document.getElementById('playerSelect');
+        if(select.selectedIndex >= 0) {
+            var name = select.options[select.selectedIndex].getAttribute('data-name');
+            document.getElementById('hiddenPlayerName').value = name;
+        }
+    }
 </script>
 {% endblock %}
