@@ -122,7 +122,7 @@ body {
 .btn-edit { background-color: var(--color-warning); margin-right: 5px; }
 .btn-delete { background-color: var(--color-danger); }
 .btn-cancel { background-color: var(--color-cancel); margin-right: 5px; }
-.btn-modal-save { background-color: var(--color-info); }
+.btn-modal-save { background-color: var(--color-success); }
 
 /* Table Styles */
 .table-wrapper h2 { color: var(--text-primary); margin-bottom: 1rem; }
