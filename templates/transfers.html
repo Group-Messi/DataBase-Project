@@ -77,6 +77,9 @@
         <form action="{{ url_for('transfers') }}" method="POST" class="player-form">
             <div class="form-group large">
                 <label class="form-label">Player</label>
+                <input type="text" id="playerSearch" placeholder="🔍 Type to search player..." 
+                       class="form-input" style="margin-bottom: 8px;" 
+                       onkeyup="filterPlayerOptions()">
                 <select name="player_id" id="playerSelect" class="form-select" onchange="updatePlayerName()">
                     <option value="" disabled selected>Select Player...</option>
                     {% for p in players %}
@@ -275,6 +278,57 @@
             var name = select.options[select.selectedIndex].getAttribute('data-name');
             document.getElementById('hiddenPlayerName').value = name;
         }
+    }
+    
+    // Oyuncu arama/filtreleme fonksiyonu - AJAX ile backend'den arama yapıyor
+    var searchTimeout;
+    function filterPlayerOptions() {
+        var input = document.getElementById('playerSearch');
+        var query = input.value.trim();
+        var select = document.getElementById('playerSelect');
+        
+        // Eğer arama metni 2 karakterden azsa, eski yöntemi kullan (frontend filtreleme)
+        if (query.length < 2) {
+            // Mevcut option'ları göster
+            var options = select.getElementsByTagName('option');
+            for (var i = 1; i < options.length; i++) {
+                options[i].style.display = '';
+            }
+            options[0].textContent = 'Select Player...';
+            return;
+        }
+        
+        // Debounce: Kullanıcı yazmayı bitirene kadar bekle
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(function() {
+            // Backend'den arama yap
+            fetch('/api/players/search?q=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    // Select'i temizle (ilk option hariç)
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    
+                    // Sonuçları ekle
+                    if (data.length === 0) {
+                        select.options[0].textContent = 'No players found';
+                    } else {
+                        select.options[0].textContent = 'Select Player...';
+                        data.forEach(function(player) {
+                            var option = document.createElement('option');
+                            option.value = player.player_id;
+                            option.setAttribute('data-name', player.name);
+                            option.textContent = player.name;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    select.options[0].textContent = 'Search error';
+                });
+        }, 300); // 300ms bekle
     }
 </script>
 {% endblock %}

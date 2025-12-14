@@ -319,6 +319,22 @@ def get_player(player_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/players/search')
+def search_players():
+    try:
+        query = request.args.get('q', '').strip()
+        if len(query) < 2:
+            return jsonify([])
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                search_sql = "SELECT player_id, name FROM players WHERE name LIKE %s ORDER BY name ASC LIMIT 50"
+                cursor.execute(search_sql, (f'%{query}%',))
+                results = cursor.fetchall()
+                return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 # ==========================================
 # 4. PLAYERS (OYUNCULAR) CRUD - (DÜZELTİLDİ)
