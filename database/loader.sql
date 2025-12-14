@@ -90,7 +90,7 @@ CREATE TABLE players (
 
 -- transfers
 CREATE TABLE transfers (
-    transfer_id INT PRIMARY KEY,
+    transfer_id INT AUTO_INCREMENT PRIMARY KEY,
     player_id INT,
     transfer_date DATE,
     from_club_id INT,

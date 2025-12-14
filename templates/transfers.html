@@ -75,11 +75,6 @@
         <h3 class="section-title">Add New Transfer</h3>
 
         <form action="{{ url_for('transfers') }}" method="POST" class="player-form">
-            <div class="form-group medium">
-                <label class="form-label">Transfer ID</label>
-                <input type="number" name="transfer_id" required class="form-input">
-            </div>
-
             <div class="form-group large">
                 <label class="form-label">Player</label>
                 <select name="player_id" id="playerSelect" class="form-select" onchange="updatePlayerName()">
