@@ -5,8 +5,8 @@
 
 -- transfers2.csv dosyasının verilerini tutacak tablo
 CREATE TABLE IF NOT EXISTS transfers (
-    -- Birincil Anahtar (Primary Key)
-    transfer_id INT PRIMARY KEY, 
+    -- Birincil Anahtar (Primary Key) - AUTO_INCREMENT ile otomatik artırılır
+    transfer_id INT AUTO_INCREMENT PRIMARY KEY, 
     
     -- Oyuncu ve Kulüp ID'leri (Diğer tablolara referans veren sütunlar)
     player_id INT NOT NULL,

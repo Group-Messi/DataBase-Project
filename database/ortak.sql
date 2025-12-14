@@ -71,7 +71,7 @@ CREATE TABLE players (
 );
 
 CREATE TABLE IF NOT EXISTS transfers (
-    transfer_id INT PRIMARY KEY, 
+    transfer_id INT AUTO_INCREMENT PRIMARY KEY, 
     player_id INT NOT NULL,
     from_club_id INT,
     to_club_id INT,

@@ -208,7 +208,6 @@ def update_game():
 def transfers():
     if request.method == 'POST':
         try:
-            transfer_id = int(request.form['transfer_id'])
             player_id = int(request.form['player_id'])
             transfer_date = request.form['transfer_date']
             from_club_id = int(request.form.get('from_club_id')) if request.form.get('from_club_id') else None
@@ -216,13 +215,33 @@ def transfers():
             transfer_season = request.form['transfer_season']
             player_name = request.form['player_name']
 
-            insert_sql = """
-                INSERT INTO transfers (transfer_id, player_id, transfer_date, from_club_id, to_club_id, transfer_season, player_name)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
+            # transfer_id AUTO_INCREMENT ile otomatik atanacak
+            # Eğer AUTO_INCREMENT yoksa (migration yapılmamışsa), manuel olarak MAX+1 hesaplıyoruz
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(insert_sql, (transfer_id, player_id, transfer_date, from_club_id, to_club_id, transfer_season, player_name))
+                    # Önce AUTO_INCREMENT'in çalışıp çalışmadığını test et
+                    # Eğer çalışmıyorsa, manuel olarak MAX+1 hesapla
+                    try:
+                        # AUTO_INCREMENT varsa bu çalışır
+                        insert_sql = """
+                            INSERT INTO transfers (player_id, transfer_date, from_club_id, to_club_id, transfer_season, player_name)
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                        """
+                        cursor.execute(insert_sql, (player_id, transfer_date, from_club_id, to_club_id, transfer_season, player_name))
+                    except Exception as auto_inc_error:
+                        # AUTO_INCREMENT yoksa, manuel olarak MAX+1 hesapla
+                        if "doesn't have a default value" in str(auto_inc_error) or "Field 'transfer_id'" in str(auto_inc_error):
+                            cursor.execute("SELECT COALESCE(MAX(transfer_id), 0) as max_id FROM transfers FOR UPDATE")
+                            result = cursor.fetchone()
+                            next_transfer_id = (result['max_id'] if result else 0) + 1
+                            
+                            insert_sql = """
+                                INSERT INTO transfers (transfer_id, player_id, transfer_date, from_club_id, to_club_id, transfer_season, player_name)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            """
+                            cursor.execute(insert_sql, (next_transfer_id, player_id, transfer_date, from_club_id, to_club_id, transfer_season, player_name))
+                        else:
+                            raise auto_inc_error
                 conn.commit()
             return redirect(url_for('transfers'))
         except Exception as e:
@@ -297,6 +316,22 @@ def get_player(player_id):
                 if not result:
                     return jsonify({"player_id": player_id, "name": None}), 404
                 return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/players/search')
+def search_players():
+    try:
+        query = request.args.get('q', '').strip()
+        if len(query) < 2:
+            return jsonify([])
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                search_sql = "SELECT player_id, name FROM players WHERE name LIKE %s ORDER BY name ASC LIMIT 50"
+                cursor.execute(search_sql, (f'%{query}%',))
+                results = cursor.fetchall()
+                return jsonify(results)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
