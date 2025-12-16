@@ -24,6 +24,35 @@ DB_SETTINGS = {
 def get_db_connection():
     return pymysql.connect(**DB_SETTINGS)
 
+# --- SEASON HESAPLAMA FONKSİYONU ---
+def calculate_season_from_date(transfer_date):
+    """
+    Tarihten season hesaplar.
+    Futbol sezonları Temmuz'dan Haziran'a kadar sürer.
+    Örn: 2026-01-10 → "25/26"
+    """
+    if not transfer_date:
+        return None
+    
+    # Tarihi parse et (YYYY-MM-DD formatı)
+    try:
+        year = int(transfer_date[:4])
+        month = int(transfer_date[5:7])
+        
+        # Temmuz-Aralık (ay >= 7): yıl/yıl+1
+        # Ocak-Haziran (ay < 7): yıl-1/yıl
+        if month >= 7:
+            season_start = year
+            season_end = year + 1
+        else:
+            season_start = year - 1
+            season_end = year
+        
+        # Son 2 haneyi al
+        return f"{str(season_start)[-2:]}/{str(season_end)[-2:]}"
+    except (ValueError, IndexError):
+        return None
+
 # --- ROTALAR ---
 
 @app.route("/")
@@ -212,8 +241,12 @@ def transfers():
             transfer_date = request.form['transfer_date']
             from_club_id = int(request.form.get('from_club_id')) if request.form.get('from_club_id') else None
             to_club_id = int(request.form.get('to_club_id')) if request.form.get('to_club_id') else None
-            transfer_season = request.form['transfer_season']
+            transfer_season = request.form.get('transfer_season', '').strip()
             player_name = request.form['player_name']
+            
+            # Eğer season boşsa, tarihten otomatik hesapla
+            if not transfer_season and transfer_date:
+                transfer_season = calculate_season_from_date(transfer_date)
 
             # transfer_id AUTO_INCREMENT ile otomatik atanacak
             # Eğer AUTO_INCREMENT yoksa (migration yapılmamışsa), manuel olarak MAX+1 hesaplıyoruz
@@ -249,6 +282,26 @@ def transfers():
 
     # GET logic
     try:
+        # Sıralama parametrelerini al
+        sort_by = request.args.get('sort_by', 'transfer_date')  # Varsayılan: transfer_date
+        order = request.args.get('order', 'DESC')  # Varsayılan: DESC
+        
+        # Güvenlik: Sadece izin verilen kolonlar
+        allowed_sort_columns = {
+            'transfer_date': 't.transfer_date',
+            'player_name': 'COALESCE(p.name, t.player_name)',
+            'from_club': 'cf.name',
+            'to_club': 'ct.name',
+            'season': 't.transfer_season'
+        }
+        
+        # Sıralama kolonu kontrolü
+        sort_column = allowed_sort_columns.get(sort_by, 't.transfer_date')
+        
+        # ORDER kontrolü (güvenlik)
+        if order not in ['ASC', 'DESC']:
+            order = 'DESC'
+        
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT club_id, name FROM clubs ORDER BY name ASC LIMIT 500")
@@ -257,20 +310,22 @@ def transfers():
                 cursor.execute("SELECT player_id, name FROM players ORDER BY name ASC LIMIT 200")
                 players_data = cursor.fetchall()
 
-                select_sql = """
+                select_sql = f"""
                     SELECT t.*, p.name AS player_full_name, cf.name AS from_club_name, ct.name AS to_club_name
                     FROM transfers t
                     LEFT JOIN players p ON t.player_id = p.player_id
                     LEFT JOIN clubs cf ON t.from_club_id = cf.club_id
                     LEFT JOIN clubs ct ON t.to_club_id = ct.club_id
-                    ORDER BY t.transfer_date DESC LIMIT 100
+                    ORDER BY {sort_column} {order}
+                    LIMIT 100
                 """
                 cursor.execute(select_sql)
                 transfers_data = cursor.fetchall()
     except Exception as e:
         return f"<h1>Transfer Verileri Çekilemedi:</h1><p>{e}</p>"
 
-    return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data, current_page="transfers")
+    return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data, 
+                         current_page="transfers", sort_by=sort_by, order=order)
 
 @app.route('/transfers/delete/<int:transfer_id>', methods=['POST'])
 def delete_transfer(transfer_id):
@@ -291,8 +346,12 @@ def update_transfer():
         transfer_date = request.form['transfer_date']
         from_club_id = int(request.form.get('from_club_id')) if request.form.get('from_club_id') else None
         to_club_id = int(request.form.get('to_club_id')) if request.form.get('to_club_id') else None
-        transfer_season = request.form['transfer_season']
+        transfer_season = request.form.get('transfer_season', '').strip()
         player_name = request.form['player_name']
+        
+        # Eğer season boşsa, tarihten otomatik hesapla
+        if not transfer_season and transfer_date:
+            transfer_season = calculate_season_from_date(transfer_date)
 
         update_sql = """
             UPDATE transfers SET player_id=%s, transfer_date=%s, from_club_id=%s, to_club_id=%s, transfer_season=%s, player_name=%s

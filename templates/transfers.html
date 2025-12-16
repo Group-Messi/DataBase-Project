@@ -3,6 +3,29 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='transfers.css') }}">
+<style>
+    /* Sıralama header linkleri için stil */
+    thead th a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 3px;
+        transition: background-color 0.2s;
+    }
+    
+    thead th a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: #007bff;
+    }
+    
+    thead th {
+        user-select: none;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -21,11 +44,51 @@
         <table>
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Player</th>
-                    <th>From Club</th>
-                    <th>To Club</th>
-                    <th>Season</th>
+                    <th>
+                        <a href="?sort_by=transfer_date&order={% if sort_by == 'transfer_date' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            Date
+                            {% if sort_by == 'transfer_date' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=player_name&order={% if sort_by == 'player_name' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            Player
+                            {% if sort_by == 'player_name' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=from_club&order={% if sort_by == 'from_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            From Club
+                            {% if sort_by == 'from_club' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=to_club&order={% if sort_by == 'to_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            To Club
+                            {% if sort_by == 'to_club' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=season&order={% if sort_by == 'season' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            Season
+                            {% if sort_by == 'season' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
                     <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
@@ -147,20 +210,20 @@
                 <input type="text" id="modal_transfer_id_display" disabled class="form-input disabled-input">
             </div>
 
-            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
-                <label class="form-label" style="font-weight: bold;">Player Selection</label>
-                
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
-                    <div style="flex: 1;">
-                        <input type="number" id="modal_player_id_input" name="player_id" class="form-input" placeholder="Enter Player ID">
-                    </div>
-                    <button type="button" class="btn btn-sm btn-edit" onclick="checkPlayerName()">Check Name</button>
-                </div>
-                
-                <div id="player_name_display" style="font-size: 0.95em; color: #2c3e50; font-weight: 600; min-height: 20px;">
-                    </div>
-                
-                <input type="hidden" id="modal_player_name" name="player_name">
+            <div class="form-group large" style="margin-bottom: 15px;">
+                <label class="form-label">Player</label>
+                <input type="text" id="modal_playerSearch" placeholder="🔍 Type to search player..." 
+                       class="form-input" style="margin-bottom: 8px;" 
+                       onkeyup="filterModalPlayerOptions()">
+                <select name="player_id" id="modal_playerSelect" class="form-select" onchange="updateModalPlayerName()">
+                    <option value="" disabled selected>Select Player...</option>
+                    {% for p in players %}
+                    <option value="{{ p.player_id }}" data-name="{{ p.name }}">
+                        {{ p.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="player_name" id="modal_player_name">
             </div>
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div style="flex: 1;">
@@ -214,9 +277,11 @@
             return;
         }
         
-        var date = new Date(dateInput.value);
-        var year = date.getFullYear();
-        var month = date.getMonth() + 1; // JavaScript'te ay 0-11 arası, biz 1-12 istiyoruz
+        // Timezone sorununu önlemek için string'i manuel parse et
+        // HTML date input "YYYY-MM-DD" formatında döndürür
+        var dateParts = dateInput.value.split('-');
+        var year = parseInt(dateParts[0], 10);
+        var month = parseInt(dateParts[1], 10); // 1-12 arası
         
         // Eğer Temmuz-Aralık arasındaysa (ay >= 7)
         // Sezon: yıl/yıl+1 (örn: 2023 → "23/24")
@@ -241,38 +306,64 @@
         seasonInput.value = startShort + '/' + endShort;
     }
     
-    // --- API ile Oyuncu İsmi Çekme ---
-    function checkPlayerName() {
-        var pid = document.getElementById('modal_player_id_input').value;
-        var displayDiv = document.getElementById('player_name_display');
-        var hiddenInput = document.getElementById('modal_player_name');
-
-        if (!pid) {
-            displayDiv.innerHTML = '<span style="color:red;">Please enter an ID first.</span>';
+    // --- Modal için Oyuncu İsmi Güncelleme ---
+    function updateModalPlayerName() {
+        var select = document.getElementById('modal_playerSelect');
+        if(select.selectedIndex >= 0) {
+            var name = select.options[select.selectedIndex].getAttribute('data-name');
+            document.getElementById('modal_player_name').value = name;
+        }
+    }
+    
+    // --- Modal için Oyuncu Arama/Filtreleme ---
+    var modalSearchTimeout;
+    function filterModalPlayerOptions() {
+        var input = document.getElementById('modal_playerSearch');
+        var query = input.value.trim();
+        var select = document.getElementById('modal_playerSelect');
+        
+        // Eğer arama metni 2 karakterden azsa, eski yöntemi kullan (frontend filtreleme)
+        if (query.length < 2) {
+            // Mevcut option'ları göster
+            var options = select.getElementsByTagName('option');
+            for (var i = 1; i < options.length; i++) {
+                options[i].style.display = '';
+            }
+            options[0].textContent = 'Select Player...';
             return;
         }
-
-        displayDiv.innerHTML = '<span style="color:gray;">Checking...</span>';
-
-        // Backend'deki /api/player/<id> rotasına istek atıyoruz
-        fetch('/api/player/' + pid)
-            .then(response => {
-                if (!response.ok) throw new Error('Not found');
-                return response.json();
-            })
-            .then(data => {
-                if (data.name) {
-                    displayDiv.innerHTML = '<span style="color:green;">✓ Found: ' + data.name + '</span>';
-                    hiddenInput.value = data.name; // Gizli inputa ismi yaz
-                } else {
-                    displayDiv.innerHTML = '<span style="color:red;">Player not found!</span>';
-                    hiddenInput.value = '';
-                }
-            })
-            .catch(error => {
-                displayDiv.innerHTML = '<span style="color:red;">Invalid Player ID</span>';
-                hiddenInput.value = '';
-            });
+        
+        // Debounce: Kullanıcı yazmayı bitirene kadar bekle
+        clearTimeout(modalSearchTimeout);
+        modalSearchTimeout = setTimeout(function() {
+            // Backend'den arama yap
+            fetch('/api/players/search?q=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    // Select'i temizle (ilk option hariç)
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    
+                    // Sonuçları ekle
+                    if (data.length === 0) {
+                        select.options[0].textContent = 'No players found';
+                    } else {
+                        select.options[0].textContent = 'Select Player...';
+                        data.forEach(function(player) {
+                            var option = document.createElement('option');
+                            option.value = player.player_id;
+                            option.setAttribute('data-name', player.name);
+                            option.textContent = player.name;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    select.options[0].textContent = 'Search error';
+                });
+        }, 300); // 300ms bekle
     }
 
     // --- Modal Açma (data-* attribute'larından okuyor) ---
@@ -293,23 +384,50 @@
         document.getElementById('modal_transfer_id_display').value = id;
         document.getElementById('modal_transfer_date').value = date;
         
-        // Tarih varsa season'u otomatik hesapla, yoksa mevcut season'u kullan
-        if (date) {
-            calculateSeasonFromDate('modal_transfer_date', 'modal_transfer_season');
-        } else {
-            document.getElementById('modal_transfer_season').value = season;
-        }
+        // Veritabanındaki season değerini göster (kullanıcı tarihi değiştirmediği sürece korunur)
+        // Season sadece kullanıcı tarihi değiştirdiğinde (onchange event'i ile) yeniden hesaplanır
+        document.getElementById('modal_transfer_season').value = season;
 
-        // Oyuncu Bilgilerini Doldur
-        document.getElementById('modal_player_id_input').value = pid;
-        document.getElementById('modal_player_name').value = pname;
+        // Oyuncu Dropdown'unu doldur
+        var playerSelect = document.getElementById('modal_playerSelect');
+        var playerSearch = document.getElementById('modal_playerSearch');
         
-        // Mevcut ismi ekrana yaz
-        var displayDiv = document.getElementById('player_name_display');
-        if(pname) {
-            displayDiv.innerHTML = '<span>Current: ' + escapeHtml(pname) + '</span>';
+        // Arama inputunu temizle
+        playerSearch.value = '';
+        
+        // Dropdown'da mevcut oyuncuyu seç
+        if (pid) {
+            // Önce tüm option'ları göster
+            var options = playerSelect.getElementsByTagName('option');
+            for (var i = 1; i < options.length; i++) {
+                options[i].style.display = '';
+            }
+            
+            // Player ID'ye göre seç
+            playerSelect.value = pid;
+            
+            // Eğer dropdown'da bu ID yoksa (backend'den yüklenmemişse), ekle
+            if (!playerSelect.value) {
+                // Yeni option oluştur ve ekle
+                var newOption = document.createElement('option');
+                newOption.value = pid;
+                newOption.setAttribute('data-name', pname);
+                newOption.textContent = pname || 'Player ID: ' + pid;
+                playerSelect.appendChild(newOption);
+                playerSelect.value = pid;
+            }
+            
+            // Player name'i hidden input'a kaydet
+            var selectedOption = playerSelect.options[playerSelect.selectedIndex];
+            if (selectedOption) {
+                document.getElementById('modal_player_name').value = selectedOption.getAttribute('data-name') || pname;
+            } else {
+                document.getElementById('modal_player_name').value = pname;
+            }
         } else {
-            displayDiv.innerHTML = '';
+            // Player ID yoksa, dropdown'ı sıfırla
+            playerSelect.value = '';
+            document.getElementById('modal_player_name').value = '';
         }
 
         // Kulüp seçimleri
@@ -350,7 +468,9 @@
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
         // Modalı temizle
-        document.getElementById('player_name_display').innerHTML = '';
+        document.getElementById('modal_playerSearch').value = '';
+        document.getElementById('modal_playerSelect').value = '';
+        document.getElementById('modal_player_name').value = '';
     }
 
     // Dışarı tıklayınca kapat
