@@ -376,3 +376,59 @@ td span[style*="color"] { font-weight: 600; }
 .stats-note small {
     color: var(--text-secondary);
 }
+
+/* =========================================
+   AUTOCOMPLETE / SEARCH DROPDOWN STYLES
+   ========================================= */
+
+/* Arama inputunu ve dropdown'ı kapsayan alan */
+.search-input-wrapper {
+    position: relative; /* Dropdown buna göre hizalanır */
+    flex: 1; /* Form içinde esnek genişlik */
+    min-width: 250px;
+}
+
+/* Inputun wrapper içinde tam oturması için */
+.search-input-wrapper .search-input {
+    width: 100%;
+    box-sizing: border-box; /* Padding dahil genişlik hesaplaması */
+}
+
+/* Açılır Sonuç Listesi */
+.search-dropdown-results {
+    position: absolute;
+    top: 100%; /* Inputun tam altından başlar */
+    left: 0;
+    right: 0; /* Genişliği wrapper ile aynı yapar */
+    background: var(--bg-card);
+    border: 1px solid var(--border-mist);
+    border-radius: 0 0 8px 8px; /* Sadece alt köşeler yuvarlak */
+    max-height: 300px; /* Çok sonuç çıkarsa scroll olsun */
+    overflow-y: auto;
+    z-index: 1000; /* Diğer elementlerin üstünde dursun */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: none; /* Varsayılan olarak gizli (JS açacak) */
+    margin-top: 2px;
+}
+
+/* Liste Elemanları */
+.search-result-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-mist);
+    transition: background-color 0.2s, color 0.2s;
+    text-align: left;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* Hover Efekti - Sizin temanıza uygun Mor renk */
+.search-result-item:hover {
+    background-color: var(--bg-vapor);
+    color: var(--color-transfer); /* Hover olunca mor yazı */
+    font-weight: 600;
+}

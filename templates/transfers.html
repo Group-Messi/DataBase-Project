@@ -37,15 +37,24 @@
 
     <!-- Player Search -->
     <div class="search-container">
-        <form method="GET" action="{{ url_for('transfers') }}" class="player-search-form">
-            <input type="text" 
-                   name="player_search" 
-                   id="player_search_input"
-                   placeholder="🔍 Search by player name..." 
-                   value="{{ player_search or '' }}"
-                   class="search-input">
+        <form method="GET" action="{{ url_for('transfers') }}" class="player-search-form" id="mainSearchForm">
+            
+            <div class="search-input-wrapper">
+                <input type="text" 
+                       name="player_search" 
+                       id="main_player_search_input"
+                       placeholder="🔍 Search by player name..." 
+                       value="{{ player_search or '' }}"
+                       class="search-input"
+                       autocomplete="off"
+                       onkeyup="filterMainSearchOptions()">
+                
+                <div id="main_search_results" class="search-dropdown-results"></div>
+            </div>
+
             <input type="hidden" name="sort_by" value="{{ sort_by }}">
             <input type="hidden" name="order" value="{{ order }}">
+            
             <button type="submit" class="search-btn">Search</button>
             {% if player_search %}
             <a href="{{ url_for('transfers', sort_by=sort_by, order=order) }}" class="clear-search-btn">✕ Clear</a>
@@ -317,6 +326,74 @@
 </div>
 
 <script>
+    // --- Ana Arama Çubuğu İçin Autocomplete ---
+    var mainSearchTimeout;
+
+    function filterMainSearchOptions() {
+        var input = document.getElementById('main_player_search_input');
+        var resultsDiv = document.getElementById('main_search_results');
+        var query = input.value.trim();
+
+        // Eğer 2 karakterden azsa gizle
+        if (query.length < 2) {
+            resultsDiv.style.display = 'none';
+            resultsDiv.innerHTML = '';
+            return;
+        }
+
+        // Debounce (Bekletme)
+        clearTimeout(mainSearchTimeout);
+        mainSearchTimeout = setTimeout(function() {
+            fetch('/api/players/search?q=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = ''; // Önce temizle
+
+                    if (data.length > 0) {
+                        resultsDiv.style.display = 'block';
+                        
+                        data.forEach(function(player) {
+                            var div = document.createElement('div');
+                            div.className = 'search-result-item';
+                            div.textContent = player.name;
+                            
+                            // Tıklanınca inputa yaz ve formu gönder
+                            div.onclick = function() {
+                                input.value = player.name;
+                                resultsDiv.style.display = 'none';
+                                // Kullanıcı seçtiği an aramayı başlatmak isterseniz alttaki satırı açın:
+                                // document.getElementById('mainSearchForm').submit();
+                            };
+                            
+                            resultsDiv.appendChild(div);
+                        });
+                    } else {
+                        // Sonuç yoksa
+                        var div = document.createElement('div');
+                        div.className = 'search-result-item';
+                        div.style.color = '#999';
+                        div.style.cursor = 'default';
+                        div.textContent = 'No player found';
+                        resultsDiv.appendChild(div);
+                        resultsDiv.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    console.error('Search error:', err);
+                });
+        }, 300);
+    }
+
+    // Dışarı tıklayınca listeyi kapat (Mevcut window.onclick fonksiyonuna ekleme yapılması gerekebilir veya yeni bir listener ekleyelim)
+    document.addEventListener('click', function(event) {
+        var input = document.getElementById('main_player_search_input');
+        var resultsDiv = document.getElementById('main_search_results');
+        
+        // Eğer tıklanan yer input veya sonuç listesi değilse kapat
+        if (event.target !== input && event.target !== resultsDiv) {
+            if(resultsDiv) resultsDiv.style.display = 'none';
+        }
+    });
     // --- Tarihe göre Season hesaplama ---
     // Futbol sezonları Temmuz'dan Haziran'a kadar sürer
     // Örn: 2023-07-01 → 2024-06-30 = "23/24"
