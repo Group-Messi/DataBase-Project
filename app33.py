@@ -335,11 +335,64 @@ def transfers():
                 """
                 cursor.execute(select_sql, params)
                 transfers_data = cursor.fetchall()
+                
+                # --- NESTED QUERY 1: En çok transfer yapan oyuncu ---
+                # player_id dolu olmasa bile player_name üzerinden hesapla, boş/g-null isimleri "Bilinmiyor" yap
+                most_transferred_player = None
+                try:
+                    most_transferred_player_sql = """
+                        SELECT 
+                            COALESCE(p.name, t.player_name, 'Bilinmiyor') AS player_name,
+                            COUNT(*) AS transfer_count
+                        FROM transfers t
+                        LEFT JOIN players p ON t.player_id = p.player_id
+                        GROUP BY COALESCE(p.name, t.player_name, 'Bilinmiyor')
+                        ORDER BY transfer_count DESC
+                        LIMIT 1
+                    """
+                    cursor.execute(most_transferred_player_sql)
+                    most_transferred_player = cursor.fetchone()
+                except Exception as e:
+                    print(f"Nested query 1 error: {e}")
+                    most_transferred_player = None
+                
+                # --- NESTED QUERY 2: Ortalama transfer sayısından fazla transfer yapan kulüpler ---
+                # İç sorgu: Ortalama transfer sayısını hesaplıyor
+                # Dış sorgu: Bu ortalamadan fazla transfer yapan kulüpleri buluyor
+                top_clubs_data = []
+                try:
+                    top_clubs_sql = """
+                        SELECT 
+                            c.name AS club_name,
+                            COUNT(*) AS transfer_count
+                        FROM clubs c
+                        INNER JOIN transfers t ON t.to_club_id = c.club_id
+                        WHERE t.to_club_id IS NOT NULL
+                        GROUP BY c.club_id, c.name
+                        HAVING COUNT(*) > (
+                            SELECT COALESCE(AVG(transfer_count), 0)
+                            FROM (
+                                SELECT COUNT(*) AS transfer_count
+                                FROM transfers
+                                WHERE to_club_id IS NOT NULL
+                                GROUP BY to_club_id
+                            ) AS avg_calc
+                        )
+                        ORDER BY transfer_count DESC
+                        LIMIT 5
+                    """
+                    cursor.execute(top_clubs_sql)
+                    top_clubs_data = cursor.fetchall() or []
+                except Exception as e:
+                    print(f"Nested query 2 error: {e}")
+                    top_clubs_data = []
+                
     except Exception as e:
         return f"<h1>Transfer Verileri Çekilemedi:</h1><p>{e}</p>"
 
     return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data, 
-                         current_page="transfers", sort_by=sort_by, order=order, player_search=player_search)
+                         current_page="transfers", sort_by=sort_by, order=order, player_search=player_search,
+                         most_transferred_player=most_transferred_player, top_clubs=top_clubs_data)
 
 @app.route('/transfers/delete/<int:transfer_id>', methods=['POST'])
 def delete_transfer(transfer_id):

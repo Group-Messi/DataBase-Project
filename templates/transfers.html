@@ -35,22 +35,56 @@
         <h1 class="page-title">Transfers Management</h1>
     </div>
 
-    <!-- Oyuncu Arama -->
+    <!-- Player Search -->
     <div class="search-container">
         <form method="GET" action="{{ url_for('transfers') }}" class="player-search-form">
             <input type="text" 
                    name="player_search" 
                    id="player_search_input"
-                   placeholder="🔍 Oyuncu ismi ile ara..." 
+                   placeholder="🔍 Search by player name..." 
                    value="{{ player_search or '' }}"
                    class="search-input">
             <input type="hidden" name="sort_by" value="{{ sort_by }}">
             <input type="hidden" name="order" value="{{ order }}">
-            <button type="submit" class="search-btn">Ara</button>
+            <button type="submit" class="search-btn">Search</button>
             {% if player_search %}
-            <a href="{{ url_for('transfers', sort_by=sort_by, order=order) }}" class="clear-search-btn">✕ Temizle</a>
+            <a href="{{ url_for('transfers', sort_by=sort_by, order=order) }}" class="clear-search-btn">✕ Clear</a>
             {% endif %}
         </form>
+    </div>
+
+    <!-- Transfer Statistics (Nested Query) -->
+    <div class="stats-container">
+        <h3 class="stats-title">📊 Transfer Statistics</h3>
+        <div class="stats-grid">
+            <!-- Most transferred player -->
+            <div class="stat-card">
+                <div class="stat-label">Most Transferred Player</div>
+                {% if most_transferred_player %}
+                <div class="stat-value">{{ most_transferred_player.player_name }}</div>
+                <div class="stat-detail">{{ most_transferred_player.transfer_count }} transfers</div>
+                {% else %}
+                <div class="stat-value" style="color: var(--text-secondary);">No data</div>
+                {% endif %}
+            </div>
+            
+            <!-- Clubs above average transfers -->
+            <div class="stat-card">
+                <div class="stat-label">Clubs Above Average Transfers</div>
+                <div class="stat-list">
+                    {% if top_clubs and top_clubs|length > 0 %}
+                        {% for club in top_clubs[:3] %}
+                        <div class="stat-item">
+                            <span class="stat-item-name">{{ club.club_name }}</span>
+                            <span class="stat-item-count">{{ club.transfer_count }} transfers</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="stat-item" style="color: var(--text-secondary);">No data</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="table-wrapper">
