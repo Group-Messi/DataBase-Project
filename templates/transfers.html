@@ -35,6 +35,24 @@
         <h1 class="page-title">Transfers Management</h1>
     </div>
 
+    <!-- Oyuncu Arama -->
+    <div class="search-container">
+        <form method="GET" action="{{ url_for('transfers') }}" class="player-search-form">
+            <input type="text" 
+                   name="player_search" 
+                   id="player_search_input"
+                   placeholder="🔍 Oyuncu ismi ile ara..." 
+                   value="{{ player_search or '' }}"
+                   class="search-input">
+            <input type="hidden" name="sort_by" value="{{ sort_by }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            <button type="submit" class="search-btn">Ara</button>
+            {% if player_search %}
+            <a href="{{ url_for('transfers', sort_by=sort_by, order=order) }}" class="clear-search-btn">✕ Temizle</a>
+            {% endif %}
+        </form>
+    </div>
+
     <div class="table-wrapper">
         <h2>Transfers List</h2>
 
@@ -45,7 +63,7 @@
             <thead>
                 <tr>
                     <th>
-                        <a href="?sort_by=transfer_date&order={% if sort_by == 'transfer_date' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                        <a href="?sort_by=transfer_date&order={% if sort_by == 'transfer_date' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
                            style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
                             Date
                             {% if sort_by == 'transfer_date' %}
@@ -54,7 +72,7 @@
                         </a>
                     </th>
                     <th>
-                        <a href="?sort_by=player_name&order={% if sort_by == 'player_name' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                        <a href="?sort_by=player_name&order={% if sort_by == 'player_name' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
                            style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
                             Player
                             {% if sort_by == 'player_name' %}
@@ -63,7 +81,7 @@
                         </a>
                     </th>
                     <th>
-                        <a href="?sort_by=from_club&order={% if sort_by == 'from_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                        <a href="?sort_by=from_club&order={% if sort_by == 'from_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
                            style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
                             From Club
                             {% if sort_by == 'from_club' %}
@@ -72,7 +90,7 @@
                         </a>
                     </th>
                     <th>
-                        <a href="?sort_by=to_club&order={% if sort_by == 'to_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                        <a href="?sort_by=to_club&order={% if sort_by == 'to_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
                            style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
                             To Club
                             {% if sort_by == 'to_club' %}
@@ -81,7 +99,7 @@
                         </a>
                     </th>
                     <th>
-                        <a href="?sort_by=season&order={% if sort_by == 'season' and order == 'DESC' %}ASC{% else %}DESC{% endif %}" 
+                        <a href="?sort_by=season&order={% if sort_by == 'season' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
                            style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
                             Season
                             {% if sort_by == 'season' %}
@@ -317,19 +335,63 @@
     
     // --- Modal için Oyuncu Arama/Filtreleme ---
     var modalSearchTimeout;
+    // Orijinal option'ları sakla (sayfa yüklendiğinde)
+    var originalModalPlayerOptions = [];
+    
+    // Sayfa yüklendiğinde orijinal option'ları sakla
+    (function() {
+        function saveOriginalModalOptions() {
+            var select = document.getElementById('modal_playerSelect');
+            if (select) {
+                originalModalPlayerOptions = [];
+                for (var i = 0; i < select.options.length; i++) {
+                    var option = select.options[i];
+                    originalModalPlayerOptions.push({
+                        value: option.value,
+                        text: option.textContent,
+                        dataName: option.getAttribute('data-name') || ''
+                    });
+                }
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', saveOriginalModalOptions);
+        } else {
+            saveOriginalModalOptions();
+        }
+    })();
+    
+    // Dropdown'ı orijinal haline getir
+    function restoreOriginalModalOptions() {
+        var select = document.getElementById('modal_playerSelect');
+        if (!select || originalModalPlayerOptions.length === 0) return;
+        
+        // Tüm option'ları temizle
+        while (select.options.length > 0) {
+            select.remove(0);
+        }
+        
+        // Orijinal option'ları geri yükle
+        originalModalPlayerOptions.forEach(function(opt) {
+            var option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.text;
+            if (opt.dataName) {
+                option.setAttribute('data-name', opt.dataName);
+            }
+            select.appendChild(option);
+        });
+    }
+    
     function filterModalPlayerOptions() {
         var input = document.getElementById('modal_playerSearch');
         var query = input.value.trim();
         var select = document.getElementById('modal_playerSelect');
         
-        // Eğer arama metni 2 karakterden azsa, eski yöntemi kullan (frontend filtreleme)
+        // Eğer arama metni 2 karakterden azsa, orijinal listeyi geri yükle
         if (query.length < 2) {
-            // Mevcut option'ları göster
-            var options = select.getElementsByTagName('option');
-            for (var i = 1; i < options.length; i++) {
-                options[i].style.display = '';
-            }
-            options[0].textContent = 'Select Player...';
+            restoreOriginalModalOptions();
             return;
         }
         
@@ -392,17 +454,14 @@
         var playerSelect = document.getElementById('modal_playerSelect');
         var playerSearch = document.getElementById('modal_playerSearch');
         
+        // Önce dropdown'ı orijinal haline getir (önceki arama sonuçlarını temizle)
+        restoreOriginalModalOptions();
+        
         // Arama inputunu temizle
         playerSearch.value = '';
         
         // Dropdown'da mevcut oyuncuyu seç
         if (pid) {
-            // Önce tüm option'ları göster
-            var options = playerSelect.getElementsByTagName('option');
-            for (var i = 1; i < options.length; i++) {
-                options[i].style.display = '';
-            }
-            
             // Player ID'ye göre seç
             playerSelect.value = pid;
             
@@ -471,6 +530,8 @@
         document.getElementById('modal_playerSearch').value = '';
         document.getElementById('modal_playerSelect').value = '';
         document.getElementById('modal_player_name').value = '';
+        // Dropdown'ı orijinal haline getir
+        restoreOriginalModalOptions();
     }
 
     // Dışarı tıklayınca kapat

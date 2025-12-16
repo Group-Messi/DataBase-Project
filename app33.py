@@ -286,6 +286,9 @@ def transfers():
         sort_by = request.args.get('sort_by', 'transfer_date')  # Varsayılan: transfer_date
         order = request.args.get('order', 'DESC')  # Varsayılan: DESC
         
+        # Oyuncu arama parametresi
+        player_search = request.args.get('player_search', '').strip()
+        
         # Güvenlik: Sadece izin verilen kolonlar
         allowed_sort_columns = {
             'transfer_date': 't.transfer_date',
@@ -310,22 +313,33 @@ def transfers():
                 cursor.execute("SELECT player_id, name FROM players ORDER BY name ASC LIMIT 200")
                 players_data = cursor.fetchall()
 
+                # WHERE koşulu oluştur (oyuncu araması için)
+                where_clause = ""
+                params = []
+                
+                if player_search:
+                    # Oyuncu ismine göre arama (players tablosundan veya transfers tablosundaki player_name'den)
+                    where_clause = "WHERE (p.name LIKE %s OR t.player_name LIKE %s)"
+                    search_pattern = f"%{player_search}%"
+                    params = [search_pattern, search_pattern]
+
                 select_sql = f"""
                     SELECT t.*, p.name AS player_full_name, cf.name AS from_club_name, ct.name AS to_club_name
                     FROM transfers t
                     LEFT JOIN players p ON t.player_id = p.player_id
                     LEFT JOIN clubs cf ON t.from_club_id = cf.club_id
                     LEFT JOIN clubs ct ON t.to_club_id = ct.club_id
+                    {where_clause}
                     ORDER BY {sort_column} {order}
                     LIMIT 100
                 """
-                cursor.execute(select_sql)
+                cursor.execute(select_sql, params)
                 transfers_data = cursor.fetchall()
     except Exception as e:
         return f"<h1>Transfer Verileri Çekilemedi:</h1><p>{e}</p>"
 
     return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data, 
-                         current_page="transfers", sort_by=sort_by, order=order)
+                         current_page="transfers", sort_by=sort_by, order=order, player_search=player_search)
 
 @app.route('/transfers/delete/<int:transfer_id>', methods=['POST'])
 def delete_transfer(transfer_id):
