@@ -3,6 +3,29 @@
 {% block head %}
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='transfers.css') }}">
+<style>
+    /* Sıralama header linkleri için stil */
+    thead th a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 3px;
+        transition: background-color 0.2s;
+    }
+    
+    thead th a:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: #007bff;
+    }
+    
+    thead th {
+        user-select: none;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -10,6 +33,58 @@
 
     <div class="page-header">
         <h1 class="page-title">Transfers Management</h1>
+    </div>
+
+    <!-- Player Search -->
+    <div class="search-container">
+        <form method="GET" action="{{ url_for('transfers') }}" class="player-search-form">
+            <input type="text" 
+                   name="player_search" 
+                   id="player_search_input"
+                   placeholder="🔍 Search by player name..." 
+                   value="{{ player_search or '' }}"
+                   class="search-input">
+            <input type="hidden" name="sort_by" value="{{ sort_by }}">
+            <input type="hidden" name="order" value="{{ order }}">
+            <button type="submit" class="search-btn">Search</button>
+            {% if player_search %}
+            <a href="{{ url_for('transfers', sort_by=sort_by, order=order) }}" class="clear-search-btn">✕ Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Transfer Statistics (Nested Query) -->
+    <div class="stats-container">
+        <h3 class="stats-title">📊 Transfer Statistics</h3>
+        <div class="stats-grid">
+            <!-- Most transferred player -->
+            <div class="stat-card">
+                <div class="stat-label">Most Transferred Player</div>
+                {% if most_transferred_player %}
+                <div class="stat-value">{{ most_transferred_player.player_name }}</div>
+                <div class="stat-detail">{{ most_transferred_player.transfer_count }} transfers</div>
+                {% else %}
+                <div class="stat-value" style="color: var(--text-secondary);">No data</div>
+                {% endif %}
+            </div>
+            
+            <!-- Clubs above average transfers -->
+            <div class="stat-card">
+                <div class="stat-label">Clubs Above Average Transfers</div>
+                <div class="stat-list">
+                    {% if top_clubs and top_clubs|length > 0 %}
+                        {% for club in top_clubs[:3] %}
+                        <div class="stat-item">
+                            <span class="stat-item-name">{{ club.club_name }}</span>
+                            <span class="stat-item-count">{{ club.transfer_count }} transfers</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="stat-item" style="color: var(--text-secondary);">No data</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="table-wrapper">
@@ -21,11 +96,51 @@
         <table>
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Player</th>
-                    <th>From Club</th>
-                    <th>To Club</th>
-                    <th>Fee</th>
+                    <th>
+                        <a href="?sort_by=transfer_date&order={% if sort_by == 'transfer_date' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            Date
+                            {% if sort_by == 'transfer_date' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=player_name&order={% if sort_by == 'player_name' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            Player
+                            {% if sort_by == 'player_name' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=from_club&order={% if sort_by == 'from_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            From Club
+                            {% if sort_by == 'from_club' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=to_club&order={% if sort_by == 'to_club' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            To Club
+                            {% if sort_by == 'to_club' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="?sort_by=season&order={% if sort_by == 'season' and order == 'DESC' %}ASC{% else %}DESC{% endif %}{% if player_search %}&player_search={{ player_search|urlencode }}{% endif %}" 
+                           style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 5px;">
+                            Season
+                            {% if sort_by == 'season' %}
+                                {% if order == 'DESC' %}▼{% else %}▲{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
                     <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
@@ -51,13 +166,19 @@
                         {% else %} Unknown {% endif %}
                     </td>
                     <td>
-                        {% if t.transfer_fee %}
-                        {{ "{:,.0f}".format(t.transfer_fee) }} €
+                        {% if t.transfer_season %}
+                        {{ t.transfer_season }}
                         {% else %} - {% endif %}
                     </td>
                     <td class="actions-cell">
-                        <button onclick="openEditModal('{{ t.transfer_id }}', '{{ t.player_id }}', '{{ t.transfer_date }}', '{{ t.from_club_id }}', '{{ t.to_club_id }}', '{{ t.transfer_season }}', '{{ t.player_name }}')"
-                            class="btn btn-sm btn-edit">Edit</button>
+                        <button class="btn btn-sm btn-edit edit-transfer-btn"
+                            data-transfer-id="{{ t.transfer_id }}"
+                            data-player-id="{{ t.player_id or '' }}"
+                            data-transfer-date="{{ t.transfer_date }}"
+                            data-from-club-id="{{ t.from_club_id or '' }}"
+                            data-to-club-id="{{ t.to_club_id or '' }}"
+                            data-transfer-season="{{ t.transfer_season or '' }}"
+                            data-player-name="{{ t.player_name or '' }}">Edit</button>
 
                         <form action="{{ url_for('delete_transfer', transfer_id=t.transfer_id) }}" method="POST" style="display:inline;"
                             onsubmit="return confirm('Delete transfer?');">
@@ -93,12 +214,12 @@
 
             <div class="form-group medium">
                 <label class="form-label">Date</label>
-                <input type="date" name="transfer_date" required class="form-input">
+                <input type="date" name="transfer_date" id="create_transfer_date" required class="form-input" onchange="calculateSeasonFromDate('create_transfer_date', 'create_transfer_season')">
             </div>
 
             <div class="form-group medium">
                 <label class="form-label">Season</label>
-                <input type="text" name="transfer_season" placeholder="23/24" class="form-input">
+                <input type="text" name="transfer_season" id="create_transfer_season" placeholder="23/24" class="form-input" readonly>
             </div>
 
             <div class="form-group large">
@@ -141,29 +262,29 @@
                 <input type="text" id="modal_transfer_id_display" disabled class="form-input disabled-input">
             </div>
 
-            <div style="margin-bottom: 15px; padding: 10px; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;">
-                <label class="form-label" style="font-weight: bold;">Player Selection</label>
-                
-                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
-                    <div style="flex: 1;">
-                        <input type="number" id="modal_player_id_input" name="player_id" class="form-input" placeholder="Enter Player ID">
-                    </div>
-                    <button type="button" class="btn btn-sm btn-edit" onclick="checkPlayerName()">Check Name</button>
-                </div>
-                
-                <div id="player_name_display" style="font-size: 0.95em; color: #2c3e50; font-weight: 600; min-height: 20px;">
-                    </div>
-                
-                <input type="hidden" id="modal_player_name" name="player_name">
+            <div class="form-group large" style="margin-bottom: 15px;">
+                <label class="form-label">Player</label>
+                <input type="text" id="modal_playerSearch" placeholder="🔍 Type to search player..." 
+                       class="form-input" style="margin-bottom: 8px;" 
+                       onkeyup="filterModalPlayerOptions()">
+                <select name="player_id" id="modal_playerSelect" class="form-select" onchange="updateModalPlayerName()">
+                    <option value="" disabled selected>Select Player...</option>
+                    {% for p in players %}
+                    <option value="{{ p.player_id }}" data-name="{{ p.name }}">
+                        {{ p.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="player_name" id="modal_player_name">
             </div>
             <div style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div style="flex: 1;">
                     <label class="form-label">Date</label>
-                    <input type="date" id="modal_transfer_date" name="transfer_date" class="form-input">
+                    <input type="date" id="modal_transfer_date" name="transfer_date" class="form-input" onchange="calculateSeasonFromDate('modal_transfer_date', 'modal_transfer_season')">
                 </div>
                 <div style="flex: 1;">
                     <label class="form-label">Season</label>
-                    <input type="text" id="modal_transfer_season" name="transfer_season" class="form-input">
+                    <input type="text" id="modal_transfer_season" name="transfer_season" class="form-input" readonly>
                 </div>
             </div>
 
@@ -196,71 +317,255 @@
 </div>
 
 <script>
-    // --- API ile Oyuncu İsmi Çekme ---
-    function checkPlayerName() {
-        var pid = document.getElementById('modal_player_id_input').value;
-        var displayDiv = document.getElementById('player_name_display');
-        var hiddenInput = document.getElementById('modal_player_name');
-
-        if (!pid) {
-            displayDiv.innerHTML = '<span style="color:red;">Please enter an ID first.</span>';
+    // --- Tarihe göre Season hesaplama ---
+    // Futbol sezonları Temmuz'dan Haziran'a kadar sürer
+    // Örn: 2023-07-01 → 2024-06-30 = "23/24"
+    function calculateSeasonFromDate(dateInputId, seasonInputId) {
+        var dateInput = document.getElementById(dateInputId);
+        var seasonInput = document.getElementById(seasonInputId);
+        
+        if (!dateInput.value) {
+            seasonInput.value = '';
             return;
         }
-
-        displayDiv.innerHTML = '<span style="color:gray;">Checking...</span>';
-
-        // Backend'deki /api/player/<id> rotasına istek atıyoruz
-        fetch('/api/player/' + pid)
-            .then(response => {
-                if (!response.ok) throw new Error('Not found');
-                return response.json();
-            })
-            .then(data => {
-                if (data.name) {
-                    displayDiv.innerHTML = '<span style="color:green;">✓ Found: ' + data.name + '</span>';
-                    hiddenInput.value = data.name; // Gizli inputa ismi yaz
-                } else {
-                    displayDiv.innerHTML = '<span style="color:red;">Player not found!</span>';
-                    hiddenInput.value = '';
+        
+        // Timezone sorununu önlemek için string'i manuel parse et
+        // HTML date input "YYYY-MM-DD" formatında döndürür
+        var dateParts = dateInput.value.split('-');
+        var year = parseInt(dateParts[0], 10);
+        var month = parseInt(dateParts[1], 10); // 1-12 arası
+        
+        // Eğer Temmuz-Aralık arasındaysa (ay >= 7)
+        // Sezon: yıl/yıl+1 (örn: 2023 → "23/24")
+        // Eğer Ocak-Haziran arasındaysa (ay < 7)
+        // Sezon: yıl-1/yıl (örn: 2024 → "23/24")
+        var seasonStartYear, seasonEndYear;
+        
+        if (month >= 7) {
+            // Temmuz-Aralık: Mevcut yıl başlangıç
+            seasonStartYear = year;
+            seasonEndYear = year + 1;
+        } else {
+            // Ocak-Haziran: Önceki yıl başlangıç
+            seasonStartYear = year - 1;
+            seasonEndYear = year;
+        }
+        
+        // Son 2 haneyi al (örn: 2023 → "23")
+        var startShort = String(seasonStartYear).slice(-2);
+        var endShort = String(seasonEndYear).slice(-2);
+        
+        seasonInput.value = startShort + '/' + endShort;
+    }
+    
+    // --- Modal için Oyuncu İsmi Güncelleme ---
+    function updateModalPlayerName() {
+        var select = document.getElementById('modal_playerSelect');
+        if(select.selectedIndex >= 0) {
+            var name = select.options[select.selectedIndex].getAttribute('data-name');
+            document.getElementById('modal_player_name').value = name;
+        }
+    }
+    
+    // --- Modal için Oyuncu Arama/Filtreleme ---
+    var modalSearchTimeout;
+    // Orijinal option'ları sakla (sayfa yüklendiğinde)
+    var originalModalPlayerOptions = [];
+    
+    // Sayfa yüklendiğinde orijinal option'ları sakla
+    (function() {
+        function saveOriginalModalOptions() {
+            var select = document.getElementById('modal_playerSelect');
+            if (select) {
+                originalModalPlayerOptions = [];
+                for (var i = 0; i < select.options.length; i++) {
+                    var option = select.options[i];
+                    originalModalPlayerOptions.push({
+                        value: option.value,
+                        text: option.textContent,
+                        dataName: option.getAttribute('data-name') || ''
+                    });
                 }
-            })
-            .catch(error => {
-                displayDiv.innerHTML = '<span style="color:red;">Invalid Player ID</span>';
-                hiddenInput.value = '';
-            });
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', saveOriginalModalOptions);
+        } else {
+            saveOriginalModalOptions();
+        }
+    })();
+    
+    // Dropdown'ı orijinal haline getir
+    function restoreOriginalModalOptions() {
+        var select = document.getElementById('modal_playerSelect');
+        if (!select || originalModalPlayerOptions.length === 0) return;
+        
+        // Tüm option'ları temizle
+        while (select.options.length > 0) {
+            select.remove(0);
+        }
+        
+        // Orijinal option'ları geri yükle
+        originalModalPlayerOptions.forEach(function(opt) {
+            var option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.text;
+            if (opt.dataName) {
+                option.setAttribute('data-name', opt.dataName);
+            }
+            select.appendChild(option);
+        });
+    }
+    
+    function filterModalPlayerOptions() {
+        var input = document.getElementById('modal_playerSearch');
+        var query = input.value.trim();
+        var select = document.getElementById('modal_playerSelect');
+        
+        // Eğer arama metni 2 karakterden azsa, orijinal listeyi geri yükle
+        if (query.length < 2) {
+            restoreOriginalModalOptions();
+            return;
+        }
+        
+        // Debounce: Kullanıcı yazmayı bitirene kadar bekle
+        clearTimeout(modalSearchTimeout);
+        modalSearchTimeout = setTimeout(function() {
+            // Backend'den arama yap
+            fetch('/api/players/search?q=' + encodeURIComponent(query))
+                .then(response => response.json())
+                .then(data => {
+                    // Select'i temizle (ilk option hariç)
+                    while (select.options.length > 1) {
+                        select.remove(1);
+                    }
+                    
+                    // Sonuçları ekle
+                    if (data.length === 0) {
+                        select.options[0].textContent = 'No players found';
+                    } else {
+                        select.options[0].textContent = 'Select Player...';
+                        data.forEach(function(player) {
+                            var option = document.createElement('option');
+                            option.value = player.player_id;
+                            option.setAttribute('data-name', player.name);
+                            option.textContent = player.name;
+                            select.appendChild(option);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    select.options[0].textContent = 'Search error';
+                });
+        }, 300); // 300ms bekle
     }
 
-    // --- Modal Açma ---
-    function openEditModal(id, pid, date, fromId, toId, season, pname) {
+    // --- Modal Açma (data-* attribute'larından okuyor) ---
+    function openEditModal(button) {
+        // data-* attribute'larından değerleri al
+        var id = button.getAttribute('data-transfer-id');
+        var pid = button.getAttribute('data-player-id') || '';
+        var date = button.getAttribute('data-transfer-date') || '';
+        var fromId = button.getAttribute('data-from-club-id') || '';
+        var toId = button.getAttribute('data-to-club-id') || '';
+        var season = button.getAttribute('data-transfer-season') || '';
+        var pname = button.getAttribute('data-player-name') || '';
+        
         document.getElementById('editModal').style.display = 'block';
         
         // ID ve Tarih alanlarını doldur
         document.getElementById('modal_transfer_id').value = id;
         document.getElementById('modal_transfer_id_display').value = id;
         document.getElementById('modal_transfer_date').value = date;
-        document.getElementById('modal_transfer_season').value = (season && season !== 'None') ? season : '';
-
-        // Oyuncu Bilgilerini Doldur
-        document.getElementById('modal_player_id_input').value = pid;
-        document.getElementById('modal_player_name').value = pname;
         
-        // Mevcut ismi ekrana yaz (Kontrol etmeye gerek kalmasın diye)
-        var displayDiv = document.getElementById('player_name_display');
-        if(pname && pname !== 'None') {
-            displayDiv.innerHTML = '<span>Current: ' + pname + '</span>';
+        // Veritabanındaki season değerini göster (kullanıcı tarihi değiştirmediği sürece korunur)
+        // Season sadece kullanıcı tarihi değiştirdiğinde (onchange event'i ile) yeniden hesaplanır
+        document.getElementById('modal_transfer_season').value = season;
+
+        // Oyuncu Dropdown'unu doldur
+        var playerSelect = document.getElementById('modal_playerSelect');
+        var playerSearch = document.getElementById('modal_playerSearch');
+        
+        // Önce dropdown'ı orijinal haline getir (önceki arama sonuçlarını temizle)
+        restoreOriginalModalOptions();
+        
+        // Arama inputunu temizle
+        playerSearch.value = '';
+        
+        // Dropdown'da mevcut oyuncuyu seç
+        if (pid) {
+            // Player ID'ye göre seç
+            playerSelect.value = pid;
+            
+            // Eğer dropdown'da bu ID yoksa (backend'den yüklenmemişse), ekle
+            if (!playerSelect.value) {
+                // Yeni option oluştur ve ekle
+                var newOption = document.createElement('option');
+                newOption.value = pid;
+                newOption.setAttribute('data-name', pname);
+                newOption.textContent = pname || 'Player ID: ' + pid;
+                playerSelect.appendChild(newOption);
+                playerSelect.value = pid;
+            }
+            
+            // Player name'i hidden input'a kaydet
+            var selectedOption = playerSelect.options[playerSelect.selectedIndex];
+            if (selectedOption) {
+                document.getElementById('modal_player_name').value = selectedOption.getAttribute('data-name') || pname;
+            } else {
+                document.getElementById('modal_player_name').value = pname;
+            }
         } else {
-            displayDiv.innerHTML = '';
+            // Player ID yoksa, dropdown'ı sıfırla
+            playerSelect.value = '';
+            document.getElementById('modal_player_name').value = '';
         }
 
         // Kulüp seçimleri
-        document.getElementById('modal_from_club_id').value = (fromId && fromId !== 'None') ? fromId : '';
-        document.getElementById('modal_to_club_id').value = (toId && toId !== 'None') ? toId : '';
+        document.getElementById('modal_from_club_id').value = fromId;
+        document.getElementById('modal_to_club_id').value = toId;
     }
+    
+    // HTML escape fonksiyonu (XSS koruması için)
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Edit butonlarına event listener ekle (event delegation kullanarak)
+    // Sayfa yüklenmiş olsa bile çalışır
+    (function() {
+        // Eğer sayfa zaten yüklendiyse direkt çalıştır
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initEditButtons);
+        } else {
+            initEditButtons();
+        }
+        
+        function initEditButtons() {
+            // Event delegation: table wrapper'a listener ekle, butonlara değil
+            var tableWrapper = document.querySelector('.table-wrapper');
+            if (tableWrapper) {
+                tableWrapper.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('edit-transfer-btn')) {
+                        openEditModal(e.target);
+                    }
+                });
+            }
+        }
+    })();
 
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
         // Modalı temizle
-        document.getElementById('player_name_display').innerHTML = '';
+        document.getElementById('modal_playerSearch').value = '';
+        document.getElementById('modal_playerSelect').value = '';
+        document.getElementById('modal_player_name').value = '';
+        // Dropdown'ı orijinal haline getir
+        restoreOriginalModalOptions();
     }
 
     // Dışarı tıklayınca kapat
