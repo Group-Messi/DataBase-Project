@@ -167,20 +167,56 @@ def games():
         except Exception as e:
             return f"<h1>Kayıt Hatası:</h1><p>{e}</p>"
 
-    # GET: Listeleme
+
     clubs_sql = "SELECT club_id, name FROM clubs ORDER BY name ASC"
+    
     select_sql = """
         SELECT g.game_id, g.home_club_id, g.away_club_id, g.game_date, 
                g.home_club_goals, g.away_club_goals,
                hc.name AS home_club_name, ac.name AS away_club_name
         FROM games g
         LEFT JOIN clubs hc ON g.home_club_id = hc.club_id
-        LEFT JOIN clubs ac ON g.away_club_id = ac.club_id
-        ORDER BY g.game_date DESC, g.game_id DESC LIMIT 100
+        LEFT JOIN clubs ac ON g.away_club_id = ac.club_id  
+        ORDER BY g.game_date DESC, g.game_id DESC LIMIT 50
     """
-    
+
+  
+    complex_sql = """
+        SELECT SUM(g.home_club_goals + g.away_club_goals) AS total_goals
+        FROM games g
+         JOIN clubs c1 ON g.home_club_id = c1.club_id
+         Join clubs c2 on g.away_club_id = c2.club_id
+         JOIN competitions comp ON c1.domestic_competition_id = comp.competition_id AND c2.domestic_competition_id = comp.competition_id
+         WHERE comp.is_major_national_league = 'True'
+    """
+
+    nested_sql = """
+        SELECT g.game_id, g.game_date, hc.name as home_name, ac.name as away_name
+        FROM games g
+        JOIN clubs hc ON g.home_club_id = hc.club_id
+        JOIN clubs ac ON g.away_club_id = ac.club_id
+        WHERE g.home_club_id IN (
+            SELECT club_id FROM clubs WHERE stadium_seats > 35000
+        )
+        ORDER BY g.game_date DESC LIMIT 7
+    """
+
+ 
+    groupby_sql = """
+        SELECT comp.name, COUNT(g.game_id) as match_count, SUM(g.home_club_goals + g.away_club_goals) as total_goals
+        FROM games g
+        JOIN clubs c ON g.home_club_id = c.club_id
+        JOIN competitions comp ON c.domestic_competition_id = comp.competition_id
+        GROUP BY comp.name
+        ORDER BY total_goals DESC LIMIT 7
+    """
+
     games_data = []
     clubs_data = []
+    major_league_goals = 0
+    big_stadium_games = []
+    league_stats = []
+
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
@@ -188,10 +224,27 @@ def games():
                 clubs_data = cursor.fetchall()
                 cursor.execute(select_sql)
                 games_data = cursor.fetchall()
+
+                cursor.execute(complex_sql)
+                res = cursor.fetchone()
+                major_league_goals = res['total_goals'] if res and res['total_goals'] else 0
+
+                cursor.execute(nested_sql)
+                big_stadium_games = cursor.fetchall()
+
+                cursor.execute(groupby_sql)
+                league_stats = cursor.fetchall()
+
     except Exception as e:
         return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
-    return render_template('games.html', games=games_data, clubs=clubs_data, current_page="games")
+    return render_template('games.html', 
+                           games=games_data, 
+                           clubs=clubs_data, 
+                           major_goals=major_league_goals,
+                           stadium_games=big_stadium_games,
+                           league_stats=league_stats,
+                           current_page="games")
 
 @app.route('/games/delete/<int:game_id>', methods=['POST'])
 def delete_game(game_id):
