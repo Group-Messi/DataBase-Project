@@ -24,7 +24,7 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Type</th>
-                    <th>Country ID</th>
+                    <th>Country Name</th>
                     <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
@@ -34,9 +34,9 @@
                     <td>{{ comp.competition_id }}</td>
                     <td><strong>{{ comp.name }}</strong></td>
                     <td>{{ comp.type }}</td>
-                    <td>{{ comp.country_id }}</td>
+                    <td>{{ comp.country_name }}</td>
                     <td class="actions-cell">
-                        <button onclick="openEditModal('{{ comp.competition_id }}', '{{ comp.name }}', '{{ comp.type }}')"
+                        <button onclick="openEditModal('{{ comp.competition_id }}', '{{ comp.name }}', '{{ comp.type }}', '{{ comp.country_name }}')"
                             class="btn btn-sm btn-edit">Edit</button>
 
                         <form action="{{ url_for('delete_competition', competition_id=comp.competition_id) }}" method="POST" style="display:inline;"
@@ -71,8 +71,8 @@
             </div>
 
             <div class="form-group medium">
-                <label class="form-label">Country ID</label>
-                <input type="number" name="country_id" class="form-input">
+                <label class="form-label">Country Name</label>
+                <input type="text" name="country_name" placeholder="Turkey" class="form-input">
             </div>
 
             <button type="submit" class="btn btn-save" style="margin-top: 24px;">Save Competition</button>
@@ -105,6 +105,11 @@
                 <input type="text" id="modal_type" name="type" required class="form-input">
             </div>
 
+            <div style="margin-bottom: 15px;">
+                <label class="form-label">Country Name</label>
+                <input type="text" id="modal_country_name" name="country_name" class="form-input">
+            </div>
+
             <div class="modal-footer">
                 <button type="button" onclick="closeEditModal()" class="btn btn-cancel">Cancel</button>
                 <button type="submit" class="btn btn-modal-save">Save Changes</button>
@@ -114,24 +119,23 @@
 </div>
 
 <script>
-    // Tablodaki Edit butonuna basılınca çalışır
-    function openEditModal(id, name, type) {
+    // Fonksiyon parametrelerine country_name eklendi
+    function openEditModal(id, name, type, country) {
         document.getElementById('editModal').style.display = 'block';
         
-        // Verileri doldur
         document.getElementById('modal_comp_id').value = id;
         document.getElementById('modal_comp_id_display').value = id;
         document.getElementById('modal_name').value = name;
         
-        // Type bazen 'None' gelebilir, kontrol edelim
         document.getElementById('modal_type').value = (type && type !== 'None') ? type : '';
+        // Country değerini set et
+        document.getElementById('modal_country_name').value = (country && country !== 'None') ? country : '';
     }
 
     function closeEditModal() {
         document.getElementById('editModal').style.display = 'none';
     }
 
-    // Dışarı tıklayınca kapat
     window.onclick = function (event) {
         var modal = document.getElementById('editModal');
         if (event.target == modal) {
