@@ -141,3 +141,86 @@ tr:last-child td { border-bottom: none; }
     border-color: var(--color-comp); /* Kırmızı renk */
 }
 
+/* ... (Mevcut CSS kodlarının altına ekle) ... */
+
+/* TOOLTIP TASARIMI */
+.tooltip-container {
+    position: relative;
+    cursor: help; /* Mouse üzerine gelince soru işareti çıkar */
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.tooltip-container:hover {
+    color: var(--color-comp); /* Üzerine gelince metin kırmızı olur */
+    text-decoration: underline;
+}
+
+/* Gizli Baloncuk */
+.tooltip-content {
+    visibility: hidden;
+    width: 220px;
+    background-color: var(--text-primary); /* Koyu Arkaplan */
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%; /* Yazının üstünde çıksın */
+    left: 50%;
+    margin-left: -110px; /* Ortalamak için */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    border: 1px solid var(--border-mist);
+}
+
+/* Baloncuğun altındaki küçük ok */
+.tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--text-primary) transparent transparent transparent;
+}
+
+/* Hover olunca göster */
+.tooltip-container:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Tooltip içindeki satırlar */
+.tooltip-row {
+    margin-bottom: 4px;
+    display: block;
+}
+.tooltip-label {
+    color: #bbb; /* Hafif gri etiket */
+    font-size: 0.8em;
+    text-transform: uppercase;
+}
+
+/* İLK 3 SATIR DÜZELTMESİ: İlk 3 satırdaki tooltip AŞAĞIDA açılsın */
+tbody tr:nth-child(-n+3) .tooltip-content {
+    bottom: auto;  /* Yukarı hizalamayı iptal et */
+    top: 125%;     /* Kutuyu yazının altına al */
+}
+
+/* İLK 3 SATIR OK İŞARETİ DÜZELTMESİ: Ok yukarı baksın */
+tbody tr:nth-child(-n+3) .tooltip-content::after {
+    top: auto;          /* Alt hizalamayı iptal et */
+    bottom: 100%;       /* Oku kutunun tepesine taşı */
+    /* Okun yönünü yukarı çevir (Arkaplan rengiyle uyumlu) */
+    border-color: transparent transparent var(--text-primary) transparent; 
+}
+
+/* Tablo wrapper taşmayı gizliyorsa tooltip kesilebilir, bunu görünür yapalım */
+.table-wrapper {
+    overflow: visible !important; 
+}
