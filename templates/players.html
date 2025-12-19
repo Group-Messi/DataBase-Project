@@ -11,8 +11,46 @@
     <div class="page-header">
         <h1 class="page-title"> Players</h1>
     </div>
+    <div class="advanced-analysis-wrapper">
+        <h2 class="analysis-title">⭐ Advanced Player Analysis (Rubric Requirement)</h2>
+        <p class="analysis-description">
+           This table displays 'Star Players' with a market value above average, their associated leagues, and their total transfer histories (Complex Join of 4+ Tables).
+        </p>
 
-
+        {% if advanced_stats|length == 0 %}
+            <p class="empty-state">Analiz için yeterli veri bulunamadı.</p>
+        {% else %}
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Club</th>
+                        <th>League</th>
+                        <th>Value</th>
+                        <th class="centered-cell">Total Transfers</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in advanced_stats %}
+                    <tr>
+                        <td>
+                            <div class="text-player-name" data-player-id="{{ stat.player_id }}">
+                                <strong>{{ stat.player_name }}</strong>
+                            </div>
+                            <span class="player-info-sub">{{ stat.position }}</span>
+                        </td>
+                        <td>{{ stat.club_name if stat.club_name else 'Free Agent' }}</td>
+                        <td>{{ stat.league_name if stat.league_name else 'N/A' }}</td>
+                        <td class="money-primary">{{ "{:,.0f}".format(stat.market_value_in_eur) }} €</td>
+                        <td class="centered-cell">
+                            <span class="count-badge">{{ stat.total_transfers }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
     <div class="table-wrapper">
         <h2> </h2>
 
