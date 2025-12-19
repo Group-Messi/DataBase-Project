@@ -143,3 +143,23 @@ LOAD DATA LOCAL INFILE 'datas/games.csv' INTO TABLE games FIELDS TERMINATED BY '
 -- 3 - mysql client çalıştırın ( mysql -u -root -p --local-infile=1 ) (mysql --local-infile=1 -u root -pŞİFRENİBURAYAGİR)
 -- 3.not (şifreniz genelde 'root' olur)
 -- 4 - bu sql scriptini çalıştırın ( SOURCE database/loader.sql; )
+
+SELECT 
+    comp.name AS Competition_Name,      -- Tablo 1: competitions
+    c.name AS Club_Name,                -- Tablo 2: clubs
+    COUNT(cg.game_id) AS Games_Played,  -- Aggregation
+    SUM(cg.own_goals) AS Total_Goals,   -- Aggregation
+    AVG(cg.own_goals) AS Avg_Goals
+FROM club_games cg                      -- Tablo 3: club_games (Senin tablon)
+INNER JOIN clubs c ON cg.club_id = c.club_id
+LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id -- OUTER JOIN
+INNER JOIN games g ON cg.game_id = g.game_id -- Tablo 4: games (4. tablo şartı)
+WHERE cg.hosting = 'Home' 
+AND c.total_market_value > (            -- NESTED QUERY (Ortalamadan zengin kulüpler)
+    SELECT AVG(total_market_value) 
+    FROM clubs 
+    WHERE total_market_value IS NOT NULL
+)
+GROUP BY comp.name, c.name              -- GROUP BY
+ORDER BY Total_Goals DESC
+LIMIT 10;
