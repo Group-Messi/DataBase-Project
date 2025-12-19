@@ -23,7 +23,6 @@
                 <tr>
                     <th>Club Name</th>
                     <th>Stadium</th>
-                    <th>Market Value</th>
                     <th>Competition</th>
                     <th class="actions-cell">Actions</th>
                 </tr>
@@ -40,11 +39,6 @@
                         </div>
                     </td>
                     <td>{{ club.stadium_name }}</td>
-                    <td>
-                        {% if club.total_market_value %}
-                        {{ "{:,.0f}".format(club.total_market_value) }} m€
-                        {% else %} - {% endif %}
-                    </td>
                     <td>
                         {% if club.competition_name %}
                         {{ club.competition_name }}
@@ -85,11 +79,6 @@
             <div class="form-group large">
                 <label class="form-label">Stadium Name</label>
                 <input type="text" name="stadium_name" placeholder="Rams Park" class="form-input">
-            </div>
-
-            <div class="form-group medium">
-                <label class="form-label">Market Value (m€)</label>
-                <input type="number" step="0.01" name="total_market_value" class="form-input">
             </div>
 
             <div class="form-group medium">
