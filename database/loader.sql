@@ -1,14 +1,12 @@
 -- INFILE'I LOCAL FOLDERA ALIYOR
 SET GLOBAL local_infile=1;
 
-
--- FOOTBALL_DB database'i oluşturuyor
 CREATE DATABASE IF NOT EXISTS football_db
   DEFAULT CHARACTER SET utf8mb4
   DEFAULT COLLATE utf8mb4_unicode_ci;
 USE football_db;
 
--- EĞER VARSA DROPLA
+-- DROP TABLE SIRALAMASI ÖNEMLİ (FK BAĞIMLILIKLARI NEDENİYLE)
 DROP TABLE IF EXISTS club_games;
 DROP TABLE IF EXISTS games;
 DROP TABLE IF EXISTS transfers;
@@ -16,20 +14,18 @@ DROP TABLE IF EXISTS players;
 DROP TABLE IF EXISTS clubs;
 DROP TABLE IF EXISTS competitions;
 
--- ŞEMALAR ortak.sql den alındı
-
--- competitions
+-- 1. COMPETITIONS (GÜNCELLENDİ: country_id yerine country_name)
 CREATE TABLE competitions (
     competition_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     sub_type VARCHAR(100),
     type VARCHAR(100),
-    country_id INT,
+    country_name VARCHAR(100), -- Değiştirildi
     url TEXT,
     is_major_national_league BOOLEAN
 ) ENGINE=InnoDB;
 
--- clubs 
+-- 2. CLUBS
 CREATE TABLE clubs (
     club_id INT PRIMARY KEY,
     club_code VARCHAR(100),
@@ -54,7 +50,7 @@ CREATE TABLE clubs (
         ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- players 
+-- 3. PLAYERS
 CREATE TABLE players (
     player_id INT PRIMARY KEY,
     first_name VARCHAR(100),
@@ -88,7 +84,7 @@ CREATE TABLE players (
         ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- transfers
+-- 4. TRANSFERS
 CREATE TABLE transfers (
     transfer_id INT AUTO_INCREMENT PRIMARY KEY,
     player_id INT,
@@ -102,7 +98,7 @@ CREATE TABLE transfers (
     FOREIGN KEY (to_club_id)   REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- club_games
+-- 5. CLUB_GAMES
 CREATE TABLE club_games (
     game_id BIGINT PRIMARY KEY,
     club_id INT,
@@ -112,7 +108,7 @@ CREATE TABLE club_games (
     FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- games
+-- 6. GAMES
 CREATE TABLE games (
     game_id BIGINT PRIMARY KEY,
     home_club_id INT NOT NULL,
@@ -124,19 +120,23 @@ CREATE TABLE games (
     FOREIGN KEY (away_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
--- RELATIVE PATH İLE CSV'LERİ YÜKLE
-LOAD DATA LOCAL INFILE 'datas/competitions.csv' INTO TABLE competitions FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+-- LOAD DATA KISMI
+-- CSV yapısı: competition_id, name, sub_type, type, country_id, country_name, domestic_league_code, url, is_major
+-- Biz country_id'yi atlayıp (@dummy), country_name'i alacağız.
+
+LOAD DATA LOCAL INFILE 'datas/competitions.csv' 
+INTO TABLE competitions 
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"' 
+LINES TERMINATED BY '\n' 
+IGNORE 1 ROWS
+(competition_id, name, sub_type, type, @dummy_country_id, country_name, @dummy_league_code, url, is_major_national_league);
 
 LOAD DATA LOCAL INFILE 'datas/clubs.csv' INTO TABLE clubs FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-
 LOAD DATA LOCAL INFILE 'datas/players.csv' INTO TABLE players FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-
 LOAD DATA LOCAL INFILE 'datas/transfers.csv' INTO TABLE transfers FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-
 LOAD DATA LOCAL INFILE 'datas/club_games.csv' INTO TABLE club_games FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-
 LOAD DATA LOCAL INFILE 'datas/games.csv' INTO TABLE games FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
-
 -- ÇALIŞTIRMA
 -- 1 - CMD AÇIN
 -- 2 - projenin root folder'ına geçin (örn: cd "C:\users\alperen\desktop\databaseprojesi")

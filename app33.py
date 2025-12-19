@@ -666,6 +666,12 @@ def delete_club(club_id):
 # 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
 # ==========================================
 
+# ... (Önceki importlar ve configler aynı)
+
+# ==========================================
+# 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
+# ==========================================
+
 @app.route('/competitions', methods=['GET', 'POST'])
 def competitions_route():
     if request.method == 'POST':
@@ -673,12 +679,13 @@ def competitions_route():
             competition_id = request.form['competition_id'] 
             name = request.form['name']
             type_ = request.form['type']
-            country_id = request.form.get('country_id')
+            # country_id yerine country_name alıyoruz
+            country_name = request.form.get('country_name')
             
-            insert_sql = "INSERT INTO competitions (competition_id, name, type, country_id) VALUES (%s, %s, %s, %s)"
+            insert_sql = "INSERT INTO competitions (competition_id, name, type, country_name) VALUES (%s, %s, %s, %s)"
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(insert_sql, (competition_id, name, type_, country_id))
+                    cursor.execute(insert_sql, (competition_id, name, type_, country_name))
                 conn.commit()
             return redirect(url_for('competitions_route'))
         except Exception as e:
@@ -701,11 +708,13 @@ def update_competition():
         competition_id = request.form['competition_id']
         name = request.form['name']
         type_ = request.form['type']
+        # Update işlemine de country_name ekledik
+        country_name = request.form.get('country_name')
         
-        update_sql = "UPDATE competitions SET name=%s, type=%s WHERE competition_id=%s"
+        update_sql = "UPDATE competitions SET name=%s, type=%s, country_name=%s WHERE competition_id=%s"
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(update_sql, (name, type_, competition_id))
+                cursor.execute(update_sql, (name, type_, country_name, competition_id))
             conn.commit()
         return redirect(url_for('competitions_route'))
     except Exception as e:
@@ -721,6 +730,8 @@ def delete_competition(competition_id):
         return redirect(url_for('competitions_route'))
     except Exception as e:
         return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+
+# ... (Kalan kodlar ve main bloğu aynı)
 
 # ==========================================
 # 7. CLUB PROFILE (TEK KULÜP DETAYI)
