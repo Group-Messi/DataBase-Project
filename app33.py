@@ -465,11 +465,11 @@ def search_players():
 # ==========================================
 # 4. PLAYERS (OYUNCULAR) CRUD - (DÜZELTİLDİ)
 # ==========================================
-
 @app.route('/players', methods=['GET', 'POST'])
 def players():
-    # --- POST: YENİ OYUNCU EKLEME ---
+    # --- POST: YENİ OYUNCU EKLEME --- (Aynı kalıyor)
     if request.method == 'POST':
+        # ... (mevcut ekleme kodunuz) ...
         try:
             player_id = int(request.form['player_id'])
             name = request.form['name']
@@ -480,10 +480,7 @@ def players():
             club_id_val = request.form.get('current_club_id')
             current_club_id = int(club_id_val) if club_id_val else None
 
-            insert_sql = """
-                INSERT INTO players (player_id, name, position, market_value_in_eur, current_club_id)
-                VALUES (%s, %s, %s, %s, %s)
-            """
+            insert_sql = "INSERT INTO players (player_id, name, position, market_value_in_eur, current_club_id) VALUES (%s, %s, %s, %s, %s)"
             
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
@@ -493,33 +490,67 @@ def players():
         except Exception as e:
             return f"<h1>Oyuncu Ekleme Hatası:</h1><p>{e}</p>"
 
-    # --- GET: LİSTELEME ---
-    clubs_sql = "SELECT club_id, name FROM clubs ORDER BY name ASC LIMIT 600"
-    
-    # Kulüp ismini de çekiyoruz (LEFT JOIN)
-    players_sql = """
-        SELECT p.player_id, p.name, p.position, p.market_value_in_eur, p.current_club_id, c.name AS club_name
-        FROM players p
-        LEFT JOIN clubs c ON p.current_club_id = c.club_id
-        ORDER BY p.market_value_in_eur DESC LIMIT 100
-    """
-    
+    # --- GET: LİSTELEME VE GELİŞMİŞ ANALİZ ---
     players_data = []
     clubs_data = []
+    advanced_stats = []
+
+    # GELİŞMİŞ ANALİZ SORĞUSU (Rubric Gereksinimleri)
+    # 4 Tablo: players, clubs, competitions, transfers [Complex Join]
+    # LEFT JOIN kullanıldı [Outer Join]
+    # İç sorgu ile ortalama piyasa değeri hesaplandı [Nested Query]
+    # Oyuncu başına transfer sayısı hesaplandı [Group By]
+    advanced_sql = """
+    SELECT 
+        p.player_id,  -- Bu sütunu ekledik
+        p.name AS player_name, 
+        p.position, 
+        c.name AS club_name, 
+        comp.name AS league_name,
+        p.market_value_in_eur,
+        COUNT(t.transfer_id) AS total_transfers
+    FROM players p
+    LEFT JOIN clubs c ON p.current_club_id = c.club_id
+    LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id
+    LEFT JOIN transfers t ON p.player_id = t.player_id
+    WHERE p.market_value_in_eur > (
+        SELECT AVG(market_value_in_eur) 
+        FROM players 
+        WHERE market_value_in_eur > 0
+    )
+    GROUP BY p.player_id, p.name, p.position, c.name, comp.name, p.market_value_in_eur
+    ORDER BY p.market_value_in_eur DESC 
+    LIMIT 10
+"""
 
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                # 1. Dropdown için kulüpleri al
-                cursor.execute(clubs_sql)
+                # 1. Dropdown için kulüpler
+                cursor.execute("SELECT club_id, name FROM clubs ORDER BY name ASC LIMIT 600")
                 clubs_data = cursor.fetchall()
-                # 2. Listeleme için oyuncuları al
-                cursor.execute(players_sql)
+                
+                # 2. Standart Oyuncu Listesi
+                cursor.execute("""
+                    SELECT p.player_id, p.name, p.position, p.market_value_in_eur, p.current_club_id, c.name AS club_name
+                    FROM players p
+                    LEFT JOIN clubs c ON p.current_club_id = c.club_id
+                    ORDER BY p.market_value_in_eur DESC LIMIT 100
+                """)
                 players_data = cursor.fetchall()
+
+                # 3. Gelişmiş Analiz Verisi (Hocanın istediği yer)
+                cursor.execute(advanced_sql)
+                advanced_stats = cursor.fetchall()
+                
     except Exception as e:
         return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
-    return render_template('players.html', players=players_data, clubs=clubs_data, current_page="players")
+    return render_template('players.html', 
+                           players=players_data, 
+                           clubs=clubs_data, 
+                           advanced_stats=advanced_stats, 
+                           current_page="players")
 
 @app.route('/players/delete/<int:player_id>', methods=['POST'])
 def delete_player(player_id):

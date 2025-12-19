@@ -246,3 +246,68 @@
         margin-bottom: 0;
     }
 }
+
+/* --- Advanced Analysis Table (Rubric Component) --- */
+.advanced-analysis-wrapper {
+    margin-bottom: 50px;
+    padding: 1.5rem;
+    background-color: var(--bg-card);
+    border: 2px solid var(--color-warning);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.analysis-title {
+    color: var(--color-warning);
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.analysis-description {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.analysis-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid var(--border-mist);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.analysis-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-mist);
+    vertical-align: middle;
+}
+
+.centered-cell {
+    text-align: center;
+}
+
+/* Sayısal rozet (badge) için */
+.count-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background-color: var(--bg-vapor);
+    border: 1px solid var(--border-mist);
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.player-info-sub {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
