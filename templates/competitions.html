@@ -24,8 +24,7 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Type</th>
-                    <th>Country Name</th>
-                    <th class="actions-cell">Actions</th>
+                    <th>Country (Hover Me!)</th> <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -34,9 +33,29 @@
                     <td>{{ comp.competition_id }}</td>
                     <td><strong>{{ comp.name }}</strong></td>
                     <td>{{ comp.type }}</td>
-                    <td>{{ comp.country_name }}</td>
+                    
+                    <td class="tooltip-container">
+                        {{ comp.country_name }}
+                        
+                        <div class="tooltip-content">
+                            <strong style="font-size:1.1em; color: var(--color-warning);">{{ comp.country_name }}</strong>
+                            <hr style="margin: 5px 0; border-color: #555;">
+                            
+                            <span class="tooltip-row">
+                                <span class="tooltip-label">Confederation:</span> {{ comp.confederation }}
+                            </span>
+                            <span class="tooltip-row">
+                                <span class="tooltip-label">ISO Code:</span> {{ comp.iso_code }}
+                            </span>
+                            <span class="tooltip-row">
+                                <span class="tooltip-label">Location:</span> 
+                                <br>Lat: {{ comp.latitude }} | Lon: {{ comp.longitude }}
+                            </span>
+                        </div>
+                    </td>
+
                     <td class="actions-cell">
-                        <button onclick="openEditModal('{{ comp.competition_id }}', '{{ comp.name }}', '{{ comp.type }}', '{{ comp.country_name }}')"
+                        <button onclick="openEditModal('{{ comp.competition_id }}', '{{ comp.name }}', '{{ comp.type }}', '{{ comp.country_id }}')"
                             class="btn btn-sm btn-edit">Edit</button>
 
                         <form action="{{ url_for('delete_competition', competition_id=comp.competition_id) }}" method="POST" style="display:inline;"
@@ -71,8 +90,13 @@
             </div>
 
             <div class="form-group medium">
-                <label class="form-label">Country Name</label>
-                <input type="text" name="country_name" placeholder="Turkey" class="form-input">
+                <label class="form-label">Country</label>
+                <select name="country_id" class="form-select">
+                    <option value="">Select Country</option>
+                    {% for c in all_countries %}
+                        <option value="{{ c.country_id }}">{{ c.country_name }}</option>
+                    {% endfor %}
+                </select>
             </div>
 
             <button type="submit" class="btn btn-save" style="margin-top: 24px;">Save Competition</button>
@@ -106,8 +130,13 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label class="form-label">Country Name</label>
-                <input type="text" id="modal_country_name" name="country_name" class="form-input">
+                <label class="form-label">Country</label>
+                <select name="country_id" id="modal_country_id" class="form-select">
+                    <option value="">Select Country</option>
+                    {% for c in all_countries %}
+                        <option value="{{ c.country_id }}">{{ c.country_name }}</option>
+                    {% endfor %}
+                </select>
             </div>
 
             <div class="modal-footer">
@@ -119,17 +148,16 @@
 </div>
 
 <script>
-    // Fonksiyon parametrelerine country_name eklendi
-    function openEditModal(id, name, type, country) {
+    function openEditModal(id, name, type, countryId) {
         document.getElementById('editModal').style.display = 'block';
         
         document.getElementById('modal_comp_id').value = id;
         document.getElementById('modal_comp_id_display').value = id;
         document.getElementById('modal_name').value = name;
-        
         document.getElementById('modal_type').value = (type && type !== 'None') ? type : '';
-        // Country değerini set et
-        document.getElementById('modal_country_name').value = (country && country !== 'None') ? country : '';
+        
+        // Dropdown'da ilgili ülkeyi seçili yap
+        document.getElementById('modal_country_id').value = countryId ? countryId : '';
     }
 
     function closeEditModal() {

@@ -755,6 +755,11 @@ def delete_club(club_id):
 # ==========================================
 # 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
 # ==========================================
+# ... (Önceki kodlar aynı) ...
+
+# ==========================================
+# 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
+# ==========================================
 
 @app.route('/competitions', methods=['GET', 'POST'])
 def competitions_route():
@@ -763,13 +768,15 @@ def competitions_route():
             competition_id = request.form['competition_id'] 
             name = request.form['name']
             type_ = request.form['type']
-            # country_id yerine country_name alıyoruz
-            country_name = request.form.get('country_name')
             
-            insert_sql = "INSERT INTO competitions (competition_id, name, type, country_name) VALUES (%s, %s, %s, %s)"
+            # Formdan artık country_id geliyor (Dropdown'dan)
+            country_id_val = request.form.get('country_id')
+            country_id = int(country_id_val) if country_id_val else None
+            
+            insert_sql = "INSERT INTO competitions (competition_id, name, type, country_id) VALUES (%s, %s, %s, %s)"
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(insert_sql, (competition_id, name, type_, country_name))
+                    cursor.execute(insert_sql, (competition_id, name, type_, country_id))
                 conn.commit()
             return redirect(url_for('competitions_route'))
         except Exception as e:
@@ -779,12 +786,37 @@ def competitions_route():
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT * FROM competitions ORDER BY name ASC LIMIT 100")
+                # JOIN işlemi ile ülke detaylarını çekiyoruz
+                query = """
+                    SELECT 
+                        comp.competition_id, 
+                        comp.name, 
+                        comp.type, 
+                        comp.country_id,
+                        c.country_name,
+                        c.iso_code,
+                        c.confederation,
+                        c.latitude,
+                        c.longitude
+                    FROM competitions comp
+                    LEFT JOIN countries c ON comp.country_id = c.country_id
+                    ORDER BY comp.name ASC 
+                    LIMIT 100
+                """
+                cursor.execute(query)
                 comps_data = cursor.fetchall()
+                
+                # Ekleme formu (Dropdown) için tüm ülkeleri de çekmemiz lazım
+                cursor.execute("SELECT country_id, country_name FROM countries ORDER BY country_name ASC")
+                countries_list = cursor.fetchall()
+
     except Exception as e:
         return f"<h1>Veri Hatası:</h1><p>{e}</p>"
 
-    return render_template('competitions.html', competitions=comps_data, current_page="competitions")
+    return render_template('competitions.html', 
+                           competitions=comps_data, 
+                           all_countries=countries_list, # Dropdown için gönderiyoruz
+                           current_page="competitions")
 
 @app.route('/competitions/update', methods=['POST'])
 def update_competition():
@@ -792,17 +824,21 @@ def update_competition():
         competition_id = request.form['competition_id']
         name = request.form['name']
         type_ = request.form['type']
-        # Update işlemine de country_name ekledik
-        country_name = request.form.get('country_name')
         
-        update_sql = "UPDATE competitions SET name=%s, type=%s, country_name=%s WHERE competition_id=%s"
+        # Update işleminde country_id
+        country_id_val = request.form.get('country_id')
+        country_id = int(country_id_val) if country_id_val else None
+        
+        update_sql = "UPDATE competitions SET name=%s, type=%s, country_id=%s WHERE competition_id=%s"
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(update_sql, (name, type_, country_name, competition_id))
+                cursor.execute(update_sql, (name, type_, country_id, competition_id))
             conn.commit()
         return redirect(url_for('competitions_route'))
     except Exception as e:
          return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
+
+# ... (Delete ve diğer rotalar aynı) ...
 
 @app.route('/competitions/delete/<string:competition_id>', methods=['POST'])
 def delete_competition(competition_id):
