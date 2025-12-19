@@ -105,15 +105,15 @@ CREATE TABLE club_games (
     hosting VARCHAR(10),
     opponent_goals INT,
     own_goals INT,
-    FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- 6. GAMES
 CREATE TABLE games (
     game_id BIGINT PRIMARY KEY,
-    home_club_id INT NOT NULL,
-    away_club_id INT NOT NULL,
-    game_date DATE NOT NULL,
+    home_club_id INT ,
+    away_club_id INT ,
+    game_date DATE ,
     home_club_goals SMALLINT DEFAULT 0,
     away_club_goals SMALLINT DEFAULT 0,
     FOREIGN KEY (home_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL,
