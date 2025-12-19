@@ -9,8 +9,48 @@
 <div class="main-container">
 
     <div class="page-header">
-        <h1 class="page-title">Games Management</h1>
+        <h1 class="page-title">Football Insights & Games</h1>
     </div>
+
+    <!-- NEW STATS DASHBOARD AT THE TOP -->
+    <div class="stats-grid">
+        <!-- Complex Join Result -->
+        <div class="stat-card highlight">
+            <div class="stat-content">
+                <h3>Goals in Elite Matches</h3>
+                <p class="stat-value">{{ major_goals }}</p>
+                <small>Total goals scored in matches between major league clubs</small>
+            </div>
+        </div>
+
+        <!-- Group By Result -->
+        <div class="stat-card">
+            <h3>Top Leagues by Scoring</h3>
+            <ul class="stat-list">
+                {% for league in league_stats %}
+                <li>
+                    <span>{{ league.name }}</span>
+                    <strong>{{ league.total_goals }} goals</strong>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Nested Query Result -->
+        <div class="stat-card">
+            <h3>Big Stadium Atmosphere</h3>
+            <p class="stat-subtitle">Recent matches in 35k+ capacity venues</p>
+            <ul class="stat-list">
+                {% for sg in stadium_games %}
+                <li>
+                    <small>{{ sg.game_date }}</small>
+                    <p>{{ sg.home_name }} vs {{ sg.away_name }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
 
     <div class="table-wrapper">
         <h2>Match List</h2>
@@ -34,22 +74,24 @@
                     <td>{{ game.game_date }}</td>
                     <td>
                         {% if game.home_club_name %}
-                        <div class="club-cell"> <img src="/static/logos/{{ (game.home_club_id % 19) + 1 }}.png" alt="Logo" class="club-logo-small">
+                        <div class="club-cell"> <img src="/static/logos/{{ (game.home_club_id % 19) + 1 }}.png"
+                                alt="Logo" class="club-logo-small">
                             <strong>{{ game.home_club_name }}</strong>
                         </div>
                         {% else %}
                         ID: {{ game.home_club_id }}
                         {% endif %}
                     </td>
-                    
+
                     <td style="font-weight: bold;">
                         {{ game.home_club_goals }} - {{ game.away_club_goals }}
                     </td>
-                    
+
                     <td>
                         {% if game.away_club_name %}
                         <div class="club-cell">
-                            <img src="/static/logos/{{ (game.away_club_id % 19) + 1 }}.png" alt="Logo" class="club-logo-small">
+                            <img src="/static/logos/{{ (game.away_club_id % 19) + 1 }}.png" alt="Logo"
+                                class="club-logo-small">
                             <strong>{{ game.away_club_name }}</strong>
                         </div>
                         {% else %}
@@ -57,12 +99,14 @@
                         {% endif %}
                     </td>
                     <td class="actions-cell">
-                        <button onclick="openEditModal('{{ game.game_id }}', '{{ game.home_club_id }}', '{{ game.away_club_id }}', '{{ game.game_date }}', '{{ game.home_club_goals }}', '{{ game.away_club_goals }}')"
+                        <button
+                            onclick="openEditModal('{{ game.game_id }}', '{{ game.home_club_id }}', '{{ game.away_club_id }}', '{{ game.game_date }}', '{{ game.home_club_goals }}', '{{ game.away_club_goals }}')"
                             class="btn btn-sm btn-edit">
                             Edit
                         </button>
 
-                        <form action="{{ url_for('delete_game', game_id=game.game_id) }}" method="POST" style="display:inline;"
+                        <form action="{{ url_for('delete_game', game_id=game.game_id) }}" method="POST"
+                            style="display:inline;"
                             onsubmit="return confirm('Are you sure you want to delete match ID {{ game.game_id }}?');">
                             <button type="submit" class="btn btn-sm btn-delete">Delete</button>
                         </form>
@@ -131,7 +175,7 @@
         </div>
         <form action="{{ url_for('update_game') }}" method="POST">
             <input type="hidden" id="modal_game_id" name="game_id">
-            
+
             <div style="margin-bottom: 15px;">
                 <label class="form-label">Game ID (Locked)</label>
                 <input type="text" id="modal_game_id_display" disabled class="form-input disabled-input">
