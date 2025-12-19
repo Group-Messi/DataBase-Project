@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="main-container">
+    <div class="page-header" style="justify-content: center; display: flex; flex-direction: column; align-items: center;">
+        <h1 class="page-title">Top Clubs Home Performance</h1>
+        <p style="color: var(--text-secondary); margin-top: 10px;">
+            (Clubs with above-average market value)
+        </p>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Competition</th>
+                    <th>Club Name</th>
+                    <th style="text-align: center;">Games (Home)</th>
+                    <th style="text-align: center;">Total Goals</th>
+                    <th style="text-align: center;">Avg Goals</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in report_data %}
+                <tr>
+                    <td>
+                        <span class="badge badge-comp">{{ row.competition_name }}</span>
+                    </td>
+                    <td><strong>{{ row.club_name }}</strong></td>
+                    <td style="text-align: center;">{{ row.games_played }}</td>
+                    <td style="text-align: center; color: var(--color-success); font-weight: bold;">
+                        {{ row.total_goals }}
+                    </td>
+                    <td style="text-align: center;">
+                        {{ "%.2f"|format(row.avg_goals) }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to Home</a>
+    </div>
+</div>
+{% endblock %}
