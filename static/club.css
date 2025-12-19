@@ -1,0 +1,199 @@
+/* --- Variables --- */
+:root {
+    /* Color Palette (Matching clubs.css theme) */
+    --bg-vapor:       #FAFAFA;
+    --bg-card:        #FFFFFF;
+    --border-mist:    #E4E4E7;
+    --text-secondary: #71717A;
+    --text-primary:   #18181B;
+
+    /* Functional Colors */
+    --color-success:  #27ae60;
+    --color-danger:   #c0392b;
+    --color-warning:  #f39c12;
+    --color-info:     #3498db; 
+    --color-cancel:   #95a5a6;
+    
+    /* Club Page Specific Accent */
+    --color-club-accent: #f1c40f; /* Yellow from clubs.css header */
+
+    /* Spacing & Radii */
+    --radius-md: 12px;
+    --radius-full: 9999px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Layout Container --- */
+.profile-container {
+    background-color: var(--bg-vapor);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-primary);
+}
+
+/* --- Navigation --- */
+.nav-area {
+    max-width: 800px;
+    margin: 0 auto 1.5rem auto;
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.btn-back:hover { color: var(--text-primary); }
+
+/* --- Main Card --- */
+.profile-card {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-mist);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+/* --- Section 1: Header (Logo + Name) --- */
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 2rem;
+    border-bottom: 2px solid var(--color-club-accent); /* Yellow accent */
+    background: linear-gradient(to bottom, #fff, #fafafa);
+    text-align: center;
+}
+
+.avatar-wrapper { margin-bottom: 1.5rem; }
+
+.avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 10%;
+    object-fit: contain;
+    border: 4px solid white;
+    box-shadow: var(--shadow-md);
+    background: white;
+}
+
+.avatar-placeholder {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background-color: var(--border-mist);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+
+.player-name {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+.player-id-badge {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    background-color: var(--bg-vapor);
+    border: 1px solid var(--border-mist);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: monospace;
+}
+
+/* --- Grid System --- */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1px;
+    background-color: var(--border-mist);
+}
+
+@media (min-width: 640px) {
+    .profile-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- Info Groups --- */
+.info-group {
+    background-color: var(--bg-card);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.group-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+}
+
+.group-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+}
+
+/* --- Data Points --- */
+.data-point {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 40%;
+}
+
+.data-point.full-width { flex: 1 1 100%; }
+
+.label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* --- Styling --- */
+.highlight-text { color: var(--color-info); }
+
+.money-primary {
+    color: var(--color-success);
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* --- Desktop Tweaks --- */
+@media (min-width: 768px) {
+    .profile-header {
+        flex-direction: row;
+        text-align: left;
+        padding: 3rem 4rem;
+        gap: 2rem;
+    }
+    .avatar-wrapper { margin-bottom: 0; }
+}

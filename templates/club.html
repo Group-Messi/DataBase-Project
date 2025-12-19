@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='club.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+
+    <div class="nav-area">
+        <a href="{{ url_for('clubs_route') }}" class="btn-back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Clubs
+        </a>
+    </div>
+
+    <div class="profile-card">
+
+        <header class="profile-header">
+            <div class="avatar-wrapper">
+                {% if club.club_id %}
+                <img src="/static/logos/{{ (club.club_id % 19) + 1 }}.png" alt="{{ club.name }}" class="avatar"
+                    onerror="this.src='https://via.placeholder.com/150?text=Logo'">
+                {% else %}
+                <div class="avatar-placeholder">?</div>
+                {% endif %}
+            </div>
+            <div class="header-info">
+                <h1 class="player-name">
+                    <span class="first-name">{{ club.name }}</span>
+                </h1>
+                <div class="player-id-badge" style="margin-top: 10px;">
+                    Last Season: {{ club.last_season or 'N/A' }}
+                </div>
+            </div>
+        </header>
+
+        <div class="profile-grid">
+
+            <section class="info-group">
+                <h3 class="group-title">Stadium Info</h3>
+                <div class="group-content">
+                    <div class="data-point">
+                        <span class="label">Stadium Name</span>
+                        <span class="value">{{ club.stadium_name or 'Unknown' }}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Capacity</span>
+                        <span class="value">
+                            {% if club.stadium_seats %}
+                                {{ "{:,.0f}".format(club.stadium_seats) }} seats
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-group">
+                <h3 class="group-title">Squad Details</h3>
+                <div class="group-content">
+                    <div class="data-point">
+                        <span class="label">Squad Size</span>
+                        <span class="value">{{ club.squad_size or '0' }}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Average Age</span>
+                        <span class="value highlight-text">{{ club.average_age or '-' }}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">National Team Players</span>
+                        <span class="value">{{ club.national_team_players or '0' }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-group">
+                <h3 class="group-title">Foreigners Stats</h3>
+                <div class="group-content">
+                    <div class="data-point">
+                        <span class="label">Foreigners Number</span>
+                        <span class="value">{{ club.foreigners_number or '0' }}</span>
+                    </div>
+                    <div class="data-point">
+                        <span class="label">Percentage</span>
+                        <span class="value">
+                            {% if club.foreigners_percentage %}
+                                %{{ club.foreigners_percentage }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="info-group">
+                <h3 class="group-title">Financials</h3>
+                <div class="group-content">
+                    <div class="data-point full-width">
+                        <span class="label">Net Transfer Record</span>
+                        <span class="value money-primary" style="font-size: 1.2rem;">
+                            {{ club.net_transfer_record or '-' }}
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

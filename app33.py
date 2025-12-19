@@ -594,17 +594,16 @@ def clubs_route():
             club_id = int(request.form['club_id'])
             name = request.form['name']
             stadium_name = request.form['stadium_name']
-            market_value = float(request.form['total_market_value'] or 0)
             comp_id = request.form.get('domestic_competition_id')
             domestic_competition_id = comp_id if comp_id else None
 
             insert_sql = """
-                INSERT INTO clubs (club_id, name, stadium_name, total_market_value, domestic_competition_id)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO clubs (club_id, name, stadium_name, domestic_competition_id)
+                VALUES (%s, %s, %s, %s)
             """
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(insert_sql, (club_id, name, stadium_name, market_value, domestic_competition_id))
+                    cursor.execute(insert_sql, (club_id, name, stadium_name, domestic_competition_id))
                 conn.commit()
             return redirect(url_for('clubs_route'))
         except Exception as e:
@@ -613,7 +612,7 @@ def clubs_route():
     # GET
     comps_sql = "SELECT competition_id, name FROM competitions ORDER BY name ASC"
     select_sql = """
-        SELECT c.club_id, c.name, c.stadium_name, c.total_market_value, c.domestic_competition_id, comp.name AS competition_name
+        SELECT c.club_id, c.name, c.stadium_name, c.domestic_competition_id, comp.name AS competition_name
         FROM clubs c
         LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id
         ORDER BY c.club_id DESC LIMIT 100
@@ -639,14 +638,13 @@ def update_club():
         club_id = int(request.form['club_id'])
         name = request.form['name']
         stadium_name = request.form['stadium_name']
-        market_value = float(request.form['total_market_value'] or 0)
         comp_id = request.form.get('domestic_competition_id')
         domestic_competition_id = comp_id if comp_id else None
         
-        update_sql = "UPDATE clubs SET name=%s, stadium_name=%s, total_market_value=%s, domestic_competition_id=%s WHERE club_id=%s"
+        update_sql = "UPDATE clubs SET name=%s, stadium_name=%s, domestic_competition_id=%s WHERE club_id=%s"
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(update_sql, (name, stadium_name, market_value, domestic_competition_id, club_id))
+                cursor.execute(update_sql, (name, stadium_name, domestic_competition_id, club_id))
             conn.commit()
         return redirect(url_for('clubs_route'))
     except Exception as e:
@@ -723,6 +721,43 @@ def delete_competition(competition_id):
         return redirect(url_for('competitions_route'))
     except Exception as e:
         return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+
+# ==========================================
+# 7. CLUB PROFILE (TEK KULÜP DETAYI)
+# ==========================================
+@app.route('/clubs/<int:club_id>')
+def club_profile(club_id):
+    try:
+        # İzin verilen sütunları ve logo için club_id'yi çekiyoruz
+        select_sql = """
+            SELECT 
+                club_id,
+                name,
+                squad_size,
+                average_age,
+                foreigners_number,
+                foreigners_percentage,
+                national_team_players,
+                stadium_name,
+                stadium_seats,
+                net_transfer_record,
+                last_season
+            FROM clubs
+            WHERE club_id = %s
+        """
+        
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(select_sql, (club_id,))
+                club_data = cursor.fetchone()
+        
+        if not club_data:
+            return f"<h1>Kulüp Bulunamadı (ID: {club_id})</h1>", 404
+            
+        return render_template('club.html', club=club_data)
+        
+    except Exception as e:
+        return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
