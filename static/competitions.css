@@ -141,3 +141,175 @@ tr:last-child td { border-bottom: none; }
     border-color: var(--color-comp); /* Kırmızı renk */
 }
 
+/* ... (Mevcut CSS kodlarının altına ekle) ... */
+
+/* TOOLTIP TASARIMI */
+.tooltip-container {
+    position: relative;
+    cursor: help; /* Mouse üzerine gelince soru işareti çıkar */
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.tooltip-container:hover {
+    color: var(--color-comp); /* Üzerine gelince metin kırmızı olur */
+    text-decoration: underline;
+}
+
+/* Gizli Baloncuk */
+.tooltip-content {
+    visibility: hidden;
+    width: 220px;
+    background-color: var(--text-primary); /* Koyu Arkaplan */
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%; /* Yazının üstünde çıksın */
+    left: 50%;
+    margin-left: -110px; /* Ortalamak için */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    border: 1px solid var(--border-mist);
+}
+
+/* Baloncuğun altındaki küçük ok */
+.tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--text-primary) transparent transparent transparent;
+}
+
+/* Hover olunca göster */
+.tooltip-container:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Tooltip içindeki satırlar */
+.tooltip-row {
+    margin-bottom: 4px;
+    display: block;
+}
+.tooltip-label {
+    color: #bbb; /* Hafif gri etiket */
+    font-size: 0.8em;
+    text-transform: uppercase;
+}
+
+/* İLK 3 SATIR DÜZELTMESİ: İlk 3 satırdaki tooltip AŞAĞIDA açılsın */
+tbody tr:nth-child(-n+3) .tooltip-content {
+    bottom: auto;  /* Yukarı hizalamayı iptal et */
+    top: 125%;     /* Kutuyu yazının altına al */
+}
+
+/* İLK 3 SATIR OK İŞARETİ DÜZELTMESİ: Ok yukarı baksın */
+tbody tr:nth-child(-n+3) .tooltip-content::after {
+    top: auto;          /* Alt hizalamayı iptal et */
+    bottom: 100%;       /* Oku kutunun tepesine taşı */
+    /* Okun yönünü yukarı çevir (Arkaplan rengiyle uyumlu) */
+    border-color: transparent transparent var(--text-primary) transparent; 
+}
+
+/* Tablo wrapper taşmayı gizliyorsa tooltip kesilebilir, bunu görünür yapalım */
+.table-wrapper {
+    overflow: visible !important; 
+}
+
+/* ... (Mevcut kodların aynen kalsın, en alta şunları ekle) ... */
+
+/* =========================================
+   REKABET ANALİZİ (COMPETITIVENESS) STYLES
+   ========================================= */
+
+.analysis-section {
+    margin-bottom: 40px;
+}
+
+.analysis-title {
+    color: var(--text-primary);
+    border-left: 5px solid var(--color-comp);
+    padding-left: 15px;
+    margin-top: 0;
+}
+
+.analysis-desc {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Tablo başlığı için hafif gri arka plan */
+.analysis-head-row {
+    background-color: #f8f9fa;
+}
+
+/* Kulüp ve Ülke alt metinleri */
+.text-muted {
+    color: #888;
+}
+
+.sub-info {
+    font-size: 0.75em;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* Oran hücresi (Monospace font ile hizalı görünsün) */
+.ratio-cell {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Bölüm ayırıcı çizgi */
+.section-divider {
+    margin: 40px 0;
+    border: 0;
+    border-top: 1px solid var(--border-mist);
+}
+
+/* =========================================
+   BADGES (ROZETLER)
+   ========================================= */
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 700;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    white-space: nowrap;
+}
+
+/* Yeşil: Çok Rekabetçi (< 1.8) */
+.badge-competitive {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Sarı: Dengeli (1.8 - 2.5) */
+.badge-balanced {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* Kırmızı: Rekabetsiz / Farmers League (> 2.5) */
+.badge-farmers {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}

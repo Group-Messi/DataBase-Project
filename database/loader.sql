@@ -6,32 +6,44 @@ CREATE DATABASE IF NOT EXISTS football_db
   DEFAULT COLLATE utf8mb4_unicode_ci;
 USE football_db;
 
--- DROP TABLE SIRALAMASI ÖNEMLİ (FK BAĞIMLILIKLARI NEDENİYLE)
+-- DROP SIRALAMASI
 DROP TABLE IF EXISTS club_games;
 DROP TABLE IF EXISTS games;
 DROP TABLE IF EXISTS transfers;
 DROP TABLE IF EXISTS players;
 DROP TABLE IF EXISTS clubs;
 DROP TABLE IF EXISTS competitions;
+DROP TABLE IF EXISTS countries;
 
--- 1. COMPETITIONS (GÜNCELLENDİ: country_id yerine country_name)
+-- 1. COUNTRIES
+CREATE TABLE countries (
+    country_id INT PRIMARY KEY,
+    country_name VARCHAR(100) NOT NULL,
+    iso_code VARCHAR(10),
+    confederation VARCHAR(20),
+    latitude FLOAT,
+    longitude FLOAT
+) ENGINE=InnoDB;
+
+-- 2. COMPETITIONS
 CREATE TABLE competitions (
     competition_id VARCHAR(10) PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     sub_type VARCHAR(100),
     type VARCHAR(100),
-    country_name VARCHAR(100), -- Değiştirildi
+    country_id INT,
     url TEXT,
-    is_major_national_league BOOLEAN
+    is_major_national_league BOOLEAN,
+    FOREIGN KEY (country_id) REFERENCES countries(country_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- 2. CLUBS
+-- 3. CLUBS
 CREATE TABLE clubs (
     club_id INT PRIMARY KEY,
     club_code VARCHAR(100),
     name VARCHAR(150),
     domestic_competition_id VARCHAR(10),
-    total_market_value FLOAT,
+    total_market_value FLOAT, -- Bu değer CSV'den 0 geliyor, aşağıda düzelteceğiz
     squad_size INT,
     average_age FLOAT,
     foreigners_number INT,
@@ -44,13 +56,10 @@ CREATE TABLE clubs (
     last_season INT,
     filename TEXT,
     url TEXT,
-    FOREIGN KEY (domestic_competition_id)
-        REFERENCES competitions(competition_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL
+    FOREIGN KEY (domestic_competition_id) REFERENCES competitions(competition_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- 3. PLAYERS
+-- 4. PLAYERS
 CREATE TABLE players (
     player_id INT PRIMARY KEY,
     first_name VARCHAR(100),
@@ -74,17 +83,11 @@ CREATE TABLE players (
     current_club_name VARCHAR(150),
     market_value_in_eur FLOAT,
     highest_market_value_in_eur FLOAT,
-    FOREIGN KEY (current_club_domestic_competition_id)
-        REFERENCES competitions(competition_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL,
-    FOREIGN KEY (current_club_id)
-        REFERENCES clubs(club_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL
+    FOREIGN KEY (current_club_domestic_competition_id) REFERENCES competitions(competition_id) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (current_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- 4. TRANSFERS
+-- 5. TRANSFERS
 CREATE TABLE transfers (
     transfer_id INT AUTO_INCREMENT PRIMARY KEY,
     player_id INT,
@@ -98,7 +101,7 @@ CREATE TABLE transfers (
     FOREIGN KEY (to_club_id)   REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- 5. CLUB_GAMES
+-- 6. CLUB_GAMES
 CREATE TABLE club_games (
     game_id BIGINT PRIMARY KEY,
     club_id INT,
@@ -108,7 +111,7 @@ CREATE TABLE club_games (
     FOREIGN KEY (club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 6. GAMES
+-- 7. GAMES
 CREATE TABLE games (
     game_id BIGINT PRIMARY KEY,
     home_club_id INT NOT ,
@@ -121,45 +124,39 @@ CREATE TABLE games (
 ) ENGINE=InnoDB;
 
 -- LOAD DATA KISMI
--- CSV yapısı: competition_id, name, sub_type, type, country_id, country_name, domestic_league_code, url, is_major
--- Biz country_id'yi atlayıp (@dummy), country_name'i alacağız.
 
-LOAD DATA LOCAL INFILE 'datas/competitions.csv' 
-INTO TABLE competitions 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"' 
-LINES TERMINATED BY '\n' 
-IGNORE 1 ROWS
-(competition_id, name, sub_type, type, @dummy_country_id, country_name, @dummy_league_code, url, is_major_national_league);
+LOAD DATA LOCAL INFILE 'datas/countries.csv' INTO TABLE countries FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS (country_id, country_name, iso_code, confederation, latitude, longitude);
+
+-- Competitions yüklenirken country_name pas geçilip country_id alınıyor
+LOAD DATA LOCAL INFILE 'datas/competitions.csv' INTO TABLE competitions FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS (competition_id, name, sub_type, type, country_id, @dummy_country_name, @dummy_league_code, url, is_major_national_league);
 
 LOAD DATA LOCAL INFILE 'datas/clubs.csv' INTO TABLE clubs FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
 LOAD DATA LOCAL INFILE 'datas/players.csv' INTO TABLE players FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
 LOAD DATA LOCAL INFILE 'datas/transfers.csv' INTO TABLE transfers FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
 LOAD DATA LOCAL INFILE 'datas/club_games.csv' INTO TABLE club_games FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
 LOAD DATA LOCAL INFILE 'datas/games.csv' INTO TABLE games FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS;
+
+-- ========================================================
+-- OTOMATİK VERİ TAMİRİ (SENİN YAPTIĞIN DÜZELTME)
+-- ========================================================
+
+-- 1. Kulüp değerlerini oyuncuların toplamından hesapla
+UPDATE clubs c
+INNER JOIN (
+    SELECT current_club_id, SUM(market_value_in_eur) as squad_value
+    FROM players
+    WHERE market_value_in_eur IS NOT NULL
+    GROUP BY current_club_id
+) p_stats ON c.club_id = p_stats.current_club_id
+SET c.total_market_value = p_stats.squad_value
+WHERE p_stats.squad_value > 0;
+
+-- 2. Değerleri Milyon Euro cinsine çevir (Çünkü veritabanında FLOAT tutuyoruz, okuması kolay olsun)
+UPDATE clubs SET total_market_value = total_market_value / 1000000 
+WHERE total_market_value > 1000000;
 -- ÇALIŞTIRMA
 -- 1 - CMD AÇIN
 -- 2 - projenin root folder'ına geçin (örn: cd "C:\users\alperen\desktop\databaseprojesi")
 -- 3 - mysql client çalıştırın ( mysql -u -root -p --local-infile=1 ) (mysql --local-infile=1 -u root -pŞİFRENİBURAYAGİR)
 -- 3.not (şifreniz genelde 'root' olur)
 -- 4 - bu sql scriptini çalıştırın ( SOURCE database/loader.sql; )
-
-SELECT 
-    comp.name AS Competition_Name,      -- Tablo 1: competitions
-    c.name AS Club_Name,                -- Tablo 2: clubs
-    COUNT(cg.game_id) AS Games_Played,  -- Aggregation
-    SUM(cg.own_goals) AS Total_Goals,   -- Aggregation
-    AVG(cg.own_goals) AS Avg_Goals
-FROM club_games cg                      -- Tablo 3: club_games (Senin tablon)
-INNER JOIN clubs c ON cg.club_id = c.club_id
-LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id -- OUTER JOIN
-INNER JOIN games g ON cg.game_id = g.game_id -- Tablo 4: games (4. tablo şartı)
-WHERE cg.hosting = 'Home' 
-AND c.total_market_value > (            -- NESTED QUERY (Ortalamadan zengin kulüpler)
-    SELECT AVG(total_market_value) 
-    FROM clubs 
-    WHERE total_market_value IS NOT NULL
-)
-GROUP BY comp.name, c.name              -- GROUP BY
-ORDER BY Total_Goals DESC
-LIMIT 10;
