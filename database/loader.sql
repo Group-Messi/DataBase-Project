@@ -111,7 +111,7 @@ CREATE TABLE club_games (
 -- 6. GAMES
 CREATE TABLE games (
     game_id BIGINT PRIMARY KEY,
-    home_club_id INT ,
+    home_club_id INT NOT ,
     away_club_id INT ,
     game_date DATE ,
     home_club_goals SMALLINT DEFAULT 0,
