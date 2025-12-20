@@ -113,14 +113,14 @@ CREATE TABLE club_games (
 
 -- 7. GAMES
 CREATE TABLE games (
-    game_id BIGINT PRIMARY KEY,
-    home_club_id INT ,
+    game_id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    home_club_id INT,
     away_club_id INT ,
     game_date DATE ,
     home_club_goals SMALLINT DEFAULT 0,
     away_club_goals SMALLINT DEFAULT 0,
-    FOREIGN KEY (home_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL,
-    FOREIGN KEY (away_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (home_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (away_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- LOAD DATA KISMI

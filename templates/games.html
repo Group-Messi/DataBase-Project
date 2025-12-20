@@ -74,8 +74,9 @@
                     <td>{{ game.game_date }}</td>
                     <td>
                         {% if game.home_club_name %}
-                        <div class="club-cell"> <img src="/static/logos/{{ (game.home_club_id % 19) + 1 }}.png"
-                                alt="Logo" class="club-logo-small">
+                        <div class="club-cell" data-club-id="{{ game.home_club_id }}"> <img
+                                src="/static/logos/{{ (game.home_club_id % 19) + 1 }}.png" alt="Logo"
+                                class="club-logo-small">
                             <strong>{{ game.home_club_name }}</strong>
                         </div>
                         {% else %}
@@ -89,7 +90,7 @@
 
                     <td>
                         {% if game.away_club_name %}
-                        <div class="club-cell">
+                        <div class="club-cell" data-club-id="{{ game.away_club_id }}">
                             <img src="/static/logos/{{ (game.away_club_id % 19) + 1 }}.png" alt="Logo"
                                 class="club-logo-small">
                             <strong>{{ game.away_club_name }}</strong>
@@ -122,10 +123,10 @@
         <h3 class="section-title">Add New Match</h3>
 
         <form action="{{ url_for('games') }}" method="POST" class="player-form">
-            <div class="form-group medium">
+            <!-- <div class="form-group medium">
                 <label class="form-label">Game ID</label>
                 <input type="number" name="game_id" required placeholder="e.g. 202301" class="form-input">
-            </div>
+            </div> -->
 
             <div class="form-group medium">
                 <label class="form-label">Date</label>
@@ -217,6 +218,20 @@
 </div>
 
 <script>
+
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const clubLinks = document.querySelectorAll('.club-cell');
+        clubLinks.forEach(clubElement => {
+            clubElement.addEventListener('click', () => {
+                const clubId = clubElement.getAttribute('data-club-id');
+                const redirectUrl = `/clubs/${clubId}`;
+                window.location.href = redirectUrl;
+            });
+        });
+    });
+
+
     function openEditModal(id, homeId, awayId, date, homeGoals, awayGoals) {
         document.getElementById('editModal').style.display = 'block';
         document.getElementById('modal_game_id').value = id;
