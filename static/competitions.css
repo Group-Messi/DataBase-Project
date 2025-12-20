@@ -224,3 +224,92 @@ tbody tr:nth-child(-n+3) .tooltip-content::after {
 .table-wrapper {
     overflow: visible !important; 
 }
+
+/* ... (Mevcut kodların aynen kalsın, en alta şunları ekle) ... */
+
+/* =========================================
+   REKABET ANALİZİ (COMPETITIVENESS) STYLES
+   ========================================= */
+
+.analysis-section {
+    margin-bottom: 40px;
+}
+
+.analysis-title {
+    color: var(--text-primary);
+    border-left: 5px solid var(--color-comp);
+    padding-left: 15px;
+    margin-top: 0;
+}
+
+.analysis-desc {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Tablo başlığı için hafif gri arka plan */
+.analysis-head-row {
+    background-color: #f8f9fa;
+}
+
+/* Kulüp ve Ülke alt metinleri */
+.text-muted {
+    color: #888;
+}
+
+.sub-info {
+    font-size: 0.75em;
+    color: #666;
+    margin-top: 2px;
+}
+
+/* Oran hücresi (Monospace font ile hizalı görünsün) */
+.ratio-cell {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Bölüm ayırıcı çizgi */
+.section-divider {
+    margin: 40px 0;
+    border: 0;
+    border-top: 1px solid var(--border-mist);
+}
+
+/* =========================================
+   BADGES (ROZETLER)
+   ========================================= */
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 700;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    white-space: nowrap;
+}
+
+/* Yeşil: Çok Rekabetçi (< 1.8) */
+.badge-competitive {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* Sarı: Dengeli (1.8 - 2.5) */
+.badge-balanced {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* Kırmızı: Rekabetsiz / Farmers League (> 2.5) */
+.badge-farmers {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
