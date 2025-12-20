@@ -12,8 +12,68 @@
         <h1 class="page-title">Competitions</h1>
     </div>
 
+    <div class="analysis-section">
+        <h2 class="analysis-title">
+            🏆 League Competitiveness Analysis
+        </h2>
+        <p class="analysis-desc">
+            Ranking major leagues based on the gap between the richest club and the league average.
+            <br><strong>Lower Ratio = More Competitive.</strong>
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr class="analysis-head-row">
+                        <th>Rank</th>
+                        <th>League</th>
+                        <th>Dominant Club</th>
+                        <th>Dominance Ratio</th>
+                        <th>Stats</th> <th>Competitiveness Level</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in competitiveness_data %}
+                    <tr>
+                        <td>#{{ loop.index }}</td>
+                        <td>
+                            <span class="flag-icon flag-icon-{{ stat.iso_code|lower }}"></span>
+                            <strong>{{ stat.league_name }}</strong>
+                            <br><small class="text-muted">{{ stat.country_name }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ stat.dominant_club }}</strong>
+                            <div class="sub-info">
+                                Max Val: €{{ stat.max_value }}m
+                            </div>
+                        </td>
+                        <td class="ratio-cell">
+                            {{ "%.2f"|format(stat.dominance_ratio) }}x
+                        </td>
+                        <td>
+                            <small class="text-muted">Avg: €{{ stat.avg_value }}m</small>
+                            <br><small class="text-muted">Players: {{ stat.total_players }}</small>
+                        </td>
+                        <td>
+                            {% if stat.dominance_ratio < 4 %} 
+                                <span class="badge badge-competitive">🔥 Highly Competitive</span>
+                            {% elif stat.dominance_ratio < 6.5 %} 
+                                <span class="badge badge-balanced">⚖️ Balanced</span>
+                            {% else %}
+                                <span class="badge badge-farmers">🚜 Farmers League</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="section-divider">
+
     <div class="table-wrapper">
-        <h2>Competition List</h2>
+        <h2>Competition Management</h2>
 
         {% if competitions|length == 0 %}
         <p class="empty-state">No competitions found.</p>
@@ -24,7 +84,8 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Type</th>
-                    <th>Country (Hover Me!)</th> <th class="actions-cell">Actions</th>
+                    <th>Country (Hover Me!)</th>
+                    <th class="actions-cell">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,14 +94,14 @@
                     <td>{{ comp.competition_id }}</td>
                     <td><strong>{{ comp.name }}</strong></td>
                     <td>{{ comp.type }}</td>
-                    
+
                     <td class="tooltip-container">
                         {{ comp.country_name }}
-                        
+
                         <div class="tooltip-content">
                             <strong style="font-size:1.1em; color: var(--color-warning);">{{ comp.country_name }}</strong>
                             <hr style="margin: 5px 0; border-color: #555;">
-                            
+
                             <span class="tooltip-row">
                                 <span class="tooltip-label">Confederation:</span> {{ comp.confederation }}
                             </span>
@@ -48,17 +109,19 @@
                                 <span class="tooltip-label">ISO Code:</span> {{ comp.iso_code }}
                             </span>
                             <span class="tooltip-row">
-                                <span class="tooltip-label">Location:</span> 
+                                <span class="tooltip-label">Location:</span>
                                 <br>Lat: {{ comp.latitude }} | Lon: {{ comp.longitude }}
                             </span>
                         </div>
                     </td>
 
                     <td class="actions-cell">
-                        <button onclick="openEditModal('{{ comp.competition_id }}', '{{ comp.name }}', '{{ comp.type }}', '{{ comp.country_id }}')"
+                        <button
+                            onclick="openEditModal('{{ comp.competition_id }}', '{{ comp.name }}', '{{ comp.type }}', '{{ comp.country_id }}')"
                             class="btn btn-sm btn-edit">Edit</button>
 
-                        <form action="{{ url_for('delete_competition', competition_id=comp.competition_id) }}" method="POST" style="display:inline;"
+                        <form action="{{ url_for('delete_competition', competition_id=comp.competition_id) }}"
+                            method="POST" style="display:inline;"
                             onsubmit="return confirm('Delete competition {{ comp.name }}?');">
                             <button type="submit" class="btn btn-sm btn-delete">Delete</button>
                         </form>
@@ -94,7 +157,7 @@
                 <select name="country_id" class="form-select">
                     <option value="">Select Country</option>
                     {% for c in all_countries %}
-                        <option value="{{ c.country_id }}">{{ c.country_name }}</option>
+                    <option value="{{ c.country_id }}">{{ c.country_name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -134,7 +197,7 @@
                 <select name="country_id" id="modal_country_id" class="form-select">
                     <option value="">Select Country</option>
                     {% for c in all_countries %}
-                        <option value="{{ c.country_id }}">{{ c.country_name }}</option>
+                    <option value="{{ c.country_id }}">{{ c.country_name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -150,13 +213,10 @@
 <script>
     function openEditModal(id, name, type, countryId) {
         document.getElementById('editModal').style.display = 'block';
-        
         document.getElementById('modal_comp_id').value = id;
         document.getElementById('modal_comp_id_display').value = id;
         document.getElementById('modal_name').value = name;
         document.getElementById('modal_type').value = (type && type !== 'None') ? type : '';
-        
-        // Dropdown'da ilgili ülkeyi seçili yap
         document.getElementById('modal_country_id').value = countryId ? countryId : '';
     }
 

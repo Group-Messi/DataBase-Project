@@ -744,32 +744,18 @@ def delete_club(club_id):
         return redirect(url_for('clubs_route'))
     except Exception as e:
         return f"<h1>Silme Hatası:</h1><p>{e}</p>"
-
-
-# ==========================================
-# 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
-# ==========================================
-
-# ... (Önceki importlar ve configler aynı)
-
-# ==========================================
-# 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
-# ==========================================
-# ... (Önceki kodlar aynı) ...
-
-# ==========================================
-# 6. COMPETITIONS (LİGLER/KUPALAR) CRUD
-# ==========================================
-
+#----------------
+# 
+#COMPETİTİONS
+#-----------
 @app.route('/competitions', methods=['GET', 'POST'])
 def competitions_route():
+    # POST İŞLEMİ (Ekleme) - Aynı kalıyor
     if request.method == 'POST':
         try:
             competition_id = request.form['competition_id'] 
             name = request.form['name']
             type_ = request.form['type']
-            
-            # Formdan artık country_id geliyor (Dropdown'dan)
             country_id_val = request.form.get('country_id')
             country_id = int(country_id_val) if country_id_val else None
             
@@ -782,40 +768,78 @@ def competitions_route():
         except Exception as e:
             return f"<h1>Lig Ekleme Hatası:</h1><p>{e}</p>"
 
-    # GET
+    # GET İŞLEMİ
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                # JOIN işlemi ile ülke detaylarını çekiyoruz
-                query = """
+                # 1. Mevcut Tablo Listesi
+                query_list = """
                     SELECT 
-                        comp.competition_id, 
-                        comp.name, 
-                        comp.type, 
-                        comp.country_id,
-                        c.country_name,
-                        c.iso_code,
-                        c.confederation,
-                        c.latitude,
-                        c.longitude
+                        comp.competition_id, comp.name, comp.type, comp.country_id,
+                        c.country_name, c.iso_code, c.confederation, c.latitude, c.longitude
                     FROM competitions comp
                     LEFT JOIN countries c ON comp.country_id = c.country_id
-                    ORDER BY comp.name ASC 
-                    LIMIT 100
+                    ORDER BY comp.name ASC LIMIT 100
                 """
-                cursor.execute(query)
+                cursor.execute(query_list)
                 comps_data = cursor.fetchall()
                 
-                # Ekleme formu (Dropdown) için tüm ülkeleri de çekmemiz lazım
+                # 2. Dropdown verisi
                 cursor.execute("SELECT country_id, country_name FROM countries ORDER BY country_name ASC")
                 countries_list = cursor.fetchall()
+
+                # 3. REKABET ANALİZİ (GÜNCELLENDİ)
+                analysis_sql = """
+                    SELECT 
+                        comp.name AS league_name,
+                        c.country_name,
+                        c.iso_code,
+                        top_club.name AS dominant_club,
+                        FORMAT(stats.max_val, 2) AS max_value,
+                        FORMAT(stats.avg_val, 2) AS avg_value,
+                        stats.dominance_ratio,
+                        COUNT(p.player_id) AS total_players  -- YENİ EKLENDİ
+                    FROM competitions comp
+                    JOIN countries c ON comp.country_id = c.country_id
+                    
+                    -- 1. NESTED QUERY & GROUP BY (Hesaplama)
+                    JOIN (
+                        SELECT 
+                            domestic_competition_id, 
+                            MAX(total_market_value) as max_val,
+                            AVG(total_market_value) as avg_val,
+                            (MAX(total_market_value) / NULLIF(AVG(total_market_value), 0)) as dominance_ratio
+                        FROM clubs
+                        WHERE total_market_value > 0
+                        GROUP BY domestic_competition_id
+                    ) stats ON comp.competition_id = stats.domestic_competition_id
+                    
+                    -- 2. COMPLEX JOIN (Dominant Kulüp İsmi)
+                    JOIN clubs top_club ON top_club.domestic_competition_id = comp.competition_id 
+                        AND top_club.total_market_value = stats.max_val
+                    
+                    -- 3. OUTER JOIN (LEFT JOIN) - Rubrik İçin Oyuncu Sayısı
+                    LEFT JOIN players p ON p.current_club_domestic_competition_id = comp.competition_id
+                    
+                    WHERE comp.type = 'domestic_league' AND stats.avg_val > 0
+                    
+                    -- Ana sorguda da Group By gerekiyor çünkü COUNT(p.player_id) ekledik
+                    GROUP BY comp.competition_id, comp.name, c.country_name, c.iso_code, top_club.name, stats.max_val, stats.avg_val, stats.dominance_ratio
+                    
+                    ORDER BY stats.dominance_ratio ASC
+                    LIMIT 20
+                """
+                
+                cursor.execute(analysis_sql)
+                competitiveness_data = cursor.fetchall()
 
     except Exception as e:
         return f"<h1>Veri Hatası:</h1><p>{e}</p>"
 
     return render_template('competitions.html', 
                            competitions=comps_data, 
-                           all_countries=countries_list, # Dropdown için gönderiyoruz
+                           all_countries=countries_list,
+                           competitiveness_data=competitiveness_data, # Veriyi gönderiyoruz
                            current_page="competitions")
 
 @app.route('/competitions/update', methods=['POST'])
