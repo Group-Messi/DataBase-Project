@@ -147,7 +147,6 @@ def games():
     # POST: Yeni Maç Ekleme
     if request.method == 'POST':
         try:
-            game_id = int(request.form['game_id'])
             home_club_id = int(request.form['home_club_id'])
             away_club_id = int(request.form['away_club_id'])
             game_date = request.form['game_date']
@@ -155,13 +154,13 @@ def games():
             away_club_goals = int(request.form.get('away_club_goals', 0))
             
             insert_sql = """
-                INSERT INTO games (game_id, home_club_id, away_club_id, game_date, home_club_goals, away_club_goals)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO games (home_club_id, away_club_id, game_date, home_club_goals, away_club_goals)
+                VALUES (%s, %s, %s, %s, %s)
             """
             
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(insert_sql, (game_id, home_club_id, away_club_id, game_date, home_club_goals, away_club_goals))
+                    cursor.execute(insert_sql, (home_club_id, away_club_id, game_date, home_club_goals, away_club_goals))
                 conn.commit()
             return redirect(url_for('games'))
         except Exception as e:
@@ -177,7 +176,7 @@ def games():
         FROM games g
         LEFT JOIN clubs hc ON g.home_club_id = hc.club_id
         LEFT JOIN clubs ac ON g.away_club_id = ac.club_id  
-        ORDER BY g.game_date DESC, g.game_id DESC LIMIT 50
+        ORDER BY g.game_Date DESC, g.home_club_id ASC LIMIT 50
     """
 
   
@@ -207,7 +206,7 @@ def games():
         FROM games g
         JOIN clubs c ON g.home_club_id = c.club_id
         JOIN competitions comp ON c.domestic_competition_id = comp.competition_id
-        GROUP BY comp.name
+        GROUP BY comp.competition_id
         ORDER BY total_goals DESC LIMIT 7
     """
 

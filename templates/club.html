@@ -8,7 +8,7 @@
 {% block content %}
 <div class="profile-container">
 
-    <div class="nav-area">
+    <!-- <div class="nav-area">
         <a href="{{ url_for('clubs_route') }}" class="btn-back">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -16,7 +16,7 @@
             </svg>
             Back to Clubs
         </a>
-    </div>
+    </div> -->
 
     <div class="profile-card">
 
@@ -52,9 +52,9 @@
                         <span class="label">Capacity</span>
                         <span class="value">
                             {% if club.stadium_seats %}
-                                {{ "{:,.0f}".format(club.stadium_seats) }} seats
+                            {{ "{:,.0f}".format(club.stadium_seats) }} seats
                             {% else %}
-                                -
+                            -
                             {% endif %}
                         </span>
                     </div>
@@ -90,9 +90,9 @@
                         <span class="label">Percentage</span>
                         <span class="value">
                             {% if club.foreigners_percentage %}
-                                %{{ club.foreigners_percentage }}
+                            %{{ club.foreigners_percentage }}
                             {% else %}
-                                -
+                            -
                             {% endif %}
                         </span>
                     </div>

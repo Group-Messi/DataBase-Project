@@ -113,7 +113,7 @@ CREATE TABLE club_games (
 
 -- 7. GAMES
 CREATE TABLE games (
-    game_id BIGINT PRIMARY KEY,
+    game_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     home_club_id INT,
     away_club_id INT ,
     game_date DATE ,
