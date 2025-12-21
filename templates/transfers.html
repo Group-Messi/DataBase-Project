@@ -156,7 +156,7 @@
                         {% if t.player_full_name %}
                         <strong>{{ t.player_full_name }}</strong>
                         {% else %}
-                        {{ t.player_name }}
+                        <span style="color: #999;">Unknown Player</span>
                         {% endif %}
                     </td>
                     <td>
@@ -179,7 +179,7 @@
                             data-player-id="{{ t.player_id or '' }}" data-transfer-date="{{ t.transfer_date }}"
                             data-from-club-id="{{ t.from_club_id or '' }}" data-to-club-id="{{ t.to_club_id or '' }}"
                             data-transfer-season="{{ t.transfer_season or '' }}"
-                            data-player-name="{{ t.player_name or '' }}">Edit</button>
+                            data-player-name="{{ t.player_full_name or '' }}">Edit</button>
 
                         <form action="{{ url_for('delete_transfer', transfer_id=t.transfer_id) }}" method="POST"
                             style="display:inline;" onsubmit="return confirm('Delete transfer?');">

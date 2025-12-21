@@ -28,13 +28,22 @@
                 <img src="{{ player.image_url }}" alt="{{ player.name }}" class="avatar"
                     onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
                 {% else %}
-                <div class="avatar-placeholder">{{ player.first_name[:1] }}{{ player.last_name[:1] }}</div>
+                <div class="avatar-placeholder">
+                    {# Eğer first_name varsa onu kullan, yoksa name'i kullan, o da yoksa '?' koy #}
+                    {{ (player.first_name or player.name or '?')[:1] }}
+                    {# Eğer last_name varsa onu kullan, yoksa boş bırak #}
+                    {{ (player.last_name or '')[:1] }}
+                </div>
                 {% endif %}
             </div>
             <div class="header-info">
                 <h1 class="player-name">
+                    {% if player.first_name %}
                     <span class="first-name">{{ player.first_name }}</span>
                     <span class="last-name">{{ player.last_name or '' }}</span>
+                    {% else %}
+                    <span class="first-name">{{ player.name }}</span>
+                    {% endif %}
                 </h1>
             </div>
         </header>
@@ -71,8 +80,6 @@
                         <span class="value highlight-text">{{ player.position or 'N/A' }}</span>
                     </div>
                     <div class="data-point">
-                        <span class="label">Sub Position</span>
-                        <span class="value">{{ player.sub_position or '-' }}</span>
                     </div>
                     <div class="data-point">
                         <span class="label">Preferred Foot</span>
