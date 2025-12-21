@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{{ super() }}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='error.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+        <h1 class="error-title">{{ error_title if error_title else "Something Went Wrong" }}</h1>
+        <p class="error-text">
+            {{ error_message if error_message else "An unexpected error occurred while processing your request." }}
+        </p>
+        <div class="error-actions">
+            <a href="{{ url_for('home') }}" class="btn-home">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Go to Main Page
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

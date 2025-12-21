@@ -84,7 +84,7 @@ def club_games():
                 conn.commit()
             return redirect(url_for('club_games'))
         except Exception as e:
-            return f"<h1>Kayıt Hatası:</h1><p>{e}</p>"
+            return handle_exception(e)
 
     # GET: Listeleme
     clubs_sql = "SELECT club_id, name FROM clubs ORDER BY name ASC"
@@ -105,7 +105,7 @@ def club_games():
                 cursor.execute(select_sql)
                 games_data = cursor.fetchall()
     except Exception as e:
-        return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
     return render_template('club_games.html', games=games_data, clubs=clubs_data, current_page="club_games")
 
@@ -119,7 +119,7 @@ def delete_club_game(game_id):
             conn.commit()
         return redirect(url_for('club_games'))
     except Exception as e:
-        return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 @app.route('/club_games/update', methods=['POST'])
 def update_club_game():
@@ -136,7 +136,7 @@ def update_club_game():
             conn.commit()
         return redirect(url_for('club_games'))
     except Exception as e:
-        return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 
 # ==========================================
@@ -164,7 +164,7 @@ def games():
                 conn.commit()
             return redirect(url_for('games'))
         except Exception as e:
-            return f"<h1>Kayıt Hatası:</h1><p>{e}</p>"
+            return handle_exception(e)
 
 
     clubs_sql = "SELECT club_id, name FROM clubs ORDER BY name ASC"
@@ -235,7 +235,7 @@ def games():
                 league_stats = cursor.fetchall()
 
     except Exception as e:
-        return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
     return render_template('games.html', 
                            games=games_data, 
@@ -255,7 +255,7 @@ def delete_game(game_id):
             conn.commit()
         return redirect(url_for('games'))
     except Exception as e:
-        return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 @app.route('/games/update', methods=['POST'])
 def update_game():
@@ -279,7 +279,7 @@ def update_game():
             conn.commit()
         return redirect(url_for('games'))
     except Exception as e:
-        return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 
 # ==========================================
@@ -330,7 +330,7 @@ def transfers():
                 conn.commit()
             return redirect(url_for('transfers'))
         except Exception as e:
-            return f"<h1>Transfer Ekleme Hatası:</h1><p>{e}</p>"
+            return handle_exception(e)
 
     # GET logic
     try:
@@ -440,7 +440,7 @@ def transfers():
                     top_clubs_data = []
                 
     except Exception as e:
-        return f"<h1>Transfer Verileri Çekilemedi:</h1><p>{e}</p>"
+        return handle_exception(e)
 
     return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data, 
                          current_page="transfers", sort_by=sort_by, order=order, player_search=player_search,
@@ -455,7 +455,7 @@ def delete_transfer(transfer_id):
             conn.commit()
         return redirect(url_for('transfers'))
     except Exception as e:
-        return f"<h1>Transfer Silme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 @app.route('/transfers/update', methods=['POST'])
 def update_transfer():
@@ -495,7 +495,7 @@ def get_player(player_id):
                     return jsonify({"player_id": player_id, "name": None}), 404
                 return jsonify(result)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return handle_exception(e)
 
 @app.route('/api/players/search')
 def search_players():
@@ -511,7 +511,7 @@ def search_players():
                 results = cursor.fetchall()
                 return jsonify(results)
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return handle_exception(e)
 
 
 # ==========================================
@@ -540,7 +540,7 @@ def players():
                 conn.commit()
             return redirect(url_for('players'))
         except Exception as e:
-            return f"<h1>Oyuncu Ekleme Hatası:</h1><p>{e}</p>"
+            return handle_exception(e)
 
     # --- GET: LİSTELEME VE GELİŞMİŞ ANALİZ ---
     players_data = []
@@ -596,7 +596,7 @@ def players():
                 advanced_stats = cursor.fetchall()
                 
     except Exception as e:
-        return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
     return render_template('players.html', 
                            players=players_data, 
@@ -613,7 +613,7 @@ def delete_player(player_id):
             conn.commit()
         return redirect(url_for('players'))
     except Exception as e:
-        return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 @app.route('/players/update', methods=['POST'])
 def update_player():
@@ -638,7 +638,7 @@ def update_player():
             conn.commit()
         return redirect(url_for('players'))
     except Exception as e:
-        return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 @app.route('/players/<int:player_id>')
 def player_page(player_id):
@@ -663,7 +663,7 @@ def player_page(player_id):
         
         return render_template('player.html', player=player, current_page="players")
     except Exception as e:
-        return f"<h1>Hata:</h1><p>{e}</p>", 500
+        return handle_exception(e)
 
 
 # ==========================================
@@ -690,7 +690,7 @@ def clubs_route():
                 conn.commit()
             return redirect(url_for('clubs_route'))
         except Exception as e:
-             return f"<h1>Kulüp Ekleme Hatası:</h1><p>{e}</p>"
+             return handle_exception(e)
 
     # GET
     comps_sql = "SELECT competition_id, name FROM competitions ORDER BY name ASC"
@@ -698,7 +698,7 @@ def clubs_route():
         SELECT c.club_id, c.name, c.stadium_name, c.domestic_competition_id, comp.name AS competition_name
         FROM clubs c
         LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id
-        ORDER BY c.club_id DESC LIMIT 100
+        ORDER BY c.club_id ASC LIMIT 100
     """
     
     clubs_data = []
@@ -711,7 +711,7 @@ def clubs_route():
                 cursor.execute(select_sql)
                 clubs_data = cursor.fetchall()
     except Exception as e:
-        return f"<h1>Veri Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
     return render_template('clubs.html', clubs=clubs_data, competitions=competitions_data, current_page="clubs")
 
@@ -731,7 +731,7 @@ def update_club():
             conn.commit()
         return redirect(url_for('clubs_route'))
     except Exception as e:
-        return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 @app.route('/clubs/delete/<int:club_id>', methods=['POST'])
 def delete_club(club_id):
@@ -742,7 +742,7 @@ def delete_club(club_id):
             conn.commit()
         return redirect(url_for('clubs_route'))
     except Exception as e:
-        return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 #----------------
 # 
 #COMPETİTİONS
@@ -765,7 +765,7 @@ def competitions_route():
                 conn.commit()
             return redirect(url_for('competitions_route'))
         except Exception as e:
-            return f"<h1>Lig Ekleme Hatası:</h1><p>{e}</p>"
+            return handle_exception(e)
 
     # GET İŞLEMİ
     try:
@@ -800,8 +800,7 @@ def competitions_route():
                         COUNT(p.player_id) AS total_players  -- YENİ EKLENDİ
                     FROM competitions comp
                     JOIN countries c ON comp.country_id = c.country_id
-                    
-                    -- 1. NESTED QUERY & GROUP BY (Hesaplama)
+
                     JOIN (
                         SELECT 
                             domestic_competition_id, 
@@ -833,7 +832,7 @@ def competitions_route():
                 competitiveness_data = cursor.fetchall()
 
     except Exception as e:
-        return f"<h1>Veri Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
     return render_template('competitions.html', 
                            competitions=comps_data, 
@@ -859,7 +858,7 @@ def update_competition():
             conn.commit()
         return redirect(url_for('competitions_route'))
     except Exception as e:
-         return f"<h1>Güncelleme Hatası:</h1><p>{e}</p>"
+         return handle_exception(e)
 
 # ... (Delete ve diğer rotalar aynı) ...
 
@@ -872,7 +871,7 @@ def delete_competition(competition_id):
             conn.commit()
         return redirect(url_for('competitions_route'))
     except Exception as e:
-        return f"<h1>Silme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
 
 # ... (Kalan kodlar ve main bloğu aynı)
 
@@ -911,7 +910,7 @@ def club_profile(club_id):
         return render_template('club.html', club=club_data)
         
     except Exception as e:
-        return f"<h1>Veri Çekme Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
     
 # ==========================================
 # 8. COMPLEX REPORT (RUBRIC: NESTED QUERY + 4 JOINS)
@@ -934,9 +933,8 @@ def top_clubs_performance_report():
             FROM club_games cg
             INNER JOIN clubs c ON cg.club_id = c.club_id
             LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id
-            LEFT JOIN games g ON cg.game_id = g.game_id  -- INNER JOIN yerine LEFT JOIN yaptık (Veri kaybını önlemek için)
+            LEFT JOIN games g ON cg.game_id = g.game_id  
             WHERE c.total_market_value >= (
-                -- NESTED QUERY: Ortalamanın üzerindeki (veya eşit) kulüpleri getir
                 SELECT COALESCE(AVG(total_market_value), 0) 
                 FROM clubs 
             )
@@ -953,7 +951,24 @@ def top_clubs_performance_report():
         return render_template('report_complex.html', report_data=report_data)
         
     except Exception as e:
-        return f"<h1>Rapor Hatası:</h1><p>{e}</p>"
+        return handle_exception(e)
+    
+## 9 - ERROR HANDLING
+
+@app.errorhandler(404)
+def page_not_found(e):
+    # This handles when a user goes to a URL that doesn't exist
+    return render_template('error.html', 
+                           error_title="404 - Page Not Found", 
+                           error_message="The page you are looking for might have been removed or is temporarily unavailable."), 404
+
+@app.errorhandler(500)
+@app.errorhandler(Exception) # This catches any unhandled python exceptions
+def handle_exception(e):
+    # This handles database errors, logic errors, etc.
+    # We pass the exception message to the template for debugging
+    return render_template('error.html', 
+                           error_title="Internal Server Error",error_message=str(e)), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
