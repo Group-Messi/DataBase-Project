@@ -301,9 +301,14 @@ def update_game():
 # ==========================================
 # 3. TRANSFERS CRUD (3NF UYUMLU - DÜZELTİLDİ)
 # ==========================================
+# ==========================================
+# 3. TRANSFERS CRUD (3NF GÜNCELLEMESİ)
+# ==========================================
 @app.route('/transfers', methods=['GET', 'POST'])
 def transfers():
     if request.method == 'POST':
+        # ... (POST işlemi aynı kalabilir, transfer_fee veritabanında var ama formdan almıyoruz, sorun yok) ...
+        # ... (Mevcut POST kodunu buraya koy, değişiklik gerekmez çünkü player_name zaten silinmişti) ...
         try:
             player_id = int(request.form['player_id'])
             transfer_date = request.form['transfer_date']
@@ -311,38 +316,17 @@ def transfers():
             to_club_id = int(request.form.get('to_club_id')) if request.form.get('to_club_id') else None
             transfer_season = request.form.get('transfer_season', '').strip()
             
-            # NOT: player_name formdan gelse bile veritabanına YAZMIYORUZ.
-            # Çünkü transfers tablosundan o sütunu sildik.
-
-            # Eğer season boşsa, tarihten otomatik hesapla
             if not transfer_season and transfer_date:
                 transfer_season = calculate_season_from_date(transfer_date)
 
-            # transfer_id AUTO_INCREMENT mantığı
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    try:
-                        # 1. YÖNTEM: AUTO_INCREMENT (player_name SİLİNDİ)
-                        insert_sql = """
-                            INSERT INTO transfers (player_id, transfer_date, from_club_id, to_club_id, transfer_season)
-                            VALUES (%s, %s, %s, %s, %s)
-                        """
-                        cursor.execute(insert_sql, (player_id, transfer_date, from_club_id, to_club_id, transfer_season))
-                    except Exception as auto_inc_error:
-                        # 2. YÖNTEM: Manuel ID Hesaplama (Eğer auto_inc yoksa)
-                        if "doesn't have a default value" in str(auto_inc_error) or "Field 'transfer_id'" in str(auto_inc_error):
-                            cursor.execute("SELECT COALESCE(MAX(transfer_id), 0) as max_id FROM transfers FOR UPDATE")
-                            result = cursor.fetchone()
-                            next_transfer_id = (result['max_id'] if result else 0) + 1
-                            
-                            # player_name BURADAN DA SİLİNDİ
-                            insert_sql = """
-                                INSERT INTO transfers (transfer_id, player_id, transfer_date, from_club_id, to_club_id, transfer_season)
-                                VALUES (%s, %s, %s, %s, %s, %s)
-                            """
-                            cursor.execute(insert_sql, (next_transfer_id, player_id, transfer_date, from_club_id, to_club_id, transfer_season))
-                        else:
-                            raise auto_inc_error
+                    # transfer_fee eklendiği için sütun sayısı değişti ama biz eski sütunlara insert yapıyoruz, sorun yok.
+                    insert_sql = """
+                        INSERT INTO transfers (player_id, transfer_date, from_club_id, to_club_id, transfer_season)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(insert_sql, (player_id, transfer_date, from_club_id, to_club_id, transfer_season))
                 conn.commit()
             return redirect(url_for('transfers'))
         except Exception as e:
@@ -354,40 +338,41 @@ def transfers():
         order = request.args.get('order', 'DESC')
         player_search = request.args.get('player_search', '').strip()
         
-        # Güvenlik: player_name artık sadece p.name (JOIN tablosundan) geliyor
         allowed_sort_columns = {
             'transfer_date': 't.transfer_date',
-            'player_name': 'p.name',  # DEĞİŞTİ: Artık t.player_name yok
+            'player_name': 'p.last_name',  # DEĞİŞTİ: Soyadına göre sıralama daha mantıklı
             'from_club': 'cf.name',
             'to_club': 'ct.name',
             'season': 't.transfer_season'
         }
         
         sort_column = allowed_sort_columns.get(sort_by, 't.transfer_date')
-        
-        if order not in ['ASC', 'DESC']:
-            order = 'DESC'
+        if order not in ['ASC', 'DESC']: order = 'DESC'
         
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
                 cursor.execute("SELECT club_id, name FROM clubs ORDER BY name ASC LIMIT 500")
                 clubs_data = cursor.fetchall()
                 
-                cursor.execute("SELECT player_id, name FROM players ORDER BY name ASC LIMIT 200")
+                # DEĞİŞTİ: players tablosunda name yok, birleştiriyoruz.
+                cursor.execute("SELECT player_id, CONCAT(first_name, ' ', last_name) as name FROM players ORDER BY last_name ASC LIMIT 200")
                 players_data = cursor.fetchall()
 
-                # WHERE koşulu (Sadece players tablosundaki isme bakıyoruz)
                 where_clause = ""
                 params = []
                 
                 if player_search:
-                    # DEĞİŞTİ: t.player_name kontrolü kaldırıldı
-                    where_clause = "WHERE p.name LIKE %s"
+                    # DEĞİŞTİ: İsim veya Soyisimde arama yap
+                    where_clause = "WHERE (p.first_name LIKE %s OR p.last_name LIKE %s)"
                     search_pattern = f"%{player_search}%"
-                    params = [search_pattern]
+                    params = [search_pattern, search_pattern]
 
+                # DEĞİŞTİ: p.name yerine CONCAT
                 select_sql = f"""
-                    SELECT t.*, p.name AS player_full_name, cf.name AS from_club_name, ct.name AS to_club_name
+                    SELECT t.*, 
+                           CONCAT(p.first_name, ' ', p.last_name) AS player_full_name, 
+                           cf.name AS from_club_name, 
+                           ct.name AS to_club_name
                     FROM transfers t
                     LEFT JOIN players p ON t.player_id = p.player_id
                     LEFT JOIN clubs cf ON t.from_club_id = cf.club_id
@@ -399,17 +384,16 @@ def transfers():
                 cursor.execute(select_sql, params)
                 transfers_data = cursor.fetchall()
                 
-                # --- NESTED QUERY 1: En çok transfer yapan oyuncu ---
-                # DEĞİŞTİ: t.player_name kalktı, p.name kullanıldı
+                # --- NESTED QUERY 1 Düzeltmesi ---
                 most_transferred_player = None
                 try:
                     most_transferred_player_sql = """
                         SELECT 
-                            COALESCE(p.name, 'Bilinmiyor') AS player_name,
+                            COALESCE(CONCAT(p.first_name, ' ', p.last_name), 'Bilinmiyor') AS player_name,
                             COUNT(*) AS transfer_count
                         FROM transfers t
                         LEFT JOIN players p ON t.player_id = p.player_id
-                        GROUP BY p.player_id, p.name
+                        GROUP BY p.player_id, p.first_name, p.last_name
                         ORDER BY transfer_count DESC
                         LIMIT 1
                     """
@@ -419,8 +403,10 @@ def transfers():
                     print(f"Nested query 1 error: {e}")
                     most_transferred_player = None
                 
-                # --- NESTED QUERY 2: (Bu kısım değişmedi, çünkü clubs ve transfers ID kullanıyor) ---
+                # --- NESTED QUERY 2 (Değişiklik yok) ---
                 top_clubs_data = []
+                # ... (Eski kodundaki top_clubs_sql aynı kalabilir) ...
+                # Buraya eski kodundaki Nested Query 2 bloğunu aynen koyabilirsin.
                 try:
                     top_clubs_sql = """
                         SELECT 
@@ -447,13 +433,13 @@ def transfers():
                 except Exception as e:
                     print(f"Nested query 2 error: {e}")
                     top_clubs_data = []
-                
+
     except Exception as e:
         return handle_exception(e)
 
     return render_template("transfers.html", transfers=transfers_data, clubs=clubs_data, players=players_data, 
-                          current_page="transfers", sort_by=sort_by, order=order, player_search=player_search,
-                          most_transferred_player=most_transferred_player, top_clubs=top_clubs_data)
+                           current_page="transfers", sort_by=sort_by, order=order, player_search=player_search,
+                           most_transferred_player=most_transferred_player, top_clubs=top_clubs_data)
 
 @app.route('/transfers/delete/<int:transfer_id>', methods=['POST'])
 def delete_transfer(transfer_id):
@@ -516,56 +502,68 @@ def search_players():
         
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                search_sql = "SELECT player_id, name FROM players WHERE name LIKE %s ORDER BY name ASC LIMIT 50"
-                cursor.execute(search_sql, (f'%{query}%',))
+                # İsim birleştirilerek arama yapılır
+                search_sql = """
+                    SELECT player_id, CONCAT(first_name, ' ', last_name) AS name 
+                    FROM players 
+                    WHERE first_name LIKE %s OR last_name LIKE %s 
+                    ORDER BY last_name ASC LIMIT 50
+                """
+                pattern = f'%{query}%'
+                cursor.execute(search_sql, (pattern, pattern))
                 results = cursor.fetchall()
                 return jsonify(results)
     except Exception as e:
         return handle_exception(e)
 
-
 # ==========================================
-# 4. PLAYERS (OYUNCULAR) CRUD - (DÜZELTİLDİ)
+# 4. PLAYERS (OYUNCULAR) CRUD (3NF GÜNCELLEMESİ)
 # ==========================================
 @app.route('/players', methods=['GET', 'POST'])
 def players():
-    # --- POST: YENİ OYUNCU EKLEME --- (Aynı kalıyor)
+    # --- POST: YENİ OYUNCU EKLEME ---
     if request.method == 'POST':
-        # ... (mevcut ekleme kodunuz) ...
         try:
             player_id = int(request.form['player_id'])
-            name = request.form['name']
-            position = request.form['position']
+            full_name = request.form['name'].strip() # Formdan "Tam İsim" geliyor
+            position = request.form['position'] # Sadece position alıyoruz (sub_position birleştiği için)
+            
             market_val_input = request.form.get('market_value_in_eur', 0)
             market_value = float(market_val_input) if market_val_input else 0.0
             
             club_id_val = request.form.get('current_club_id')
             current_club_id = int(club_id_val) if club_id_val else None
 
-            insert_sql = "INSERT INTO players (player_id, name, position, market_value_in_eur, current_club_id) VALUES (%s, %s, %s, %s, %s)"
+            # İsim Parçalama Mantığı (Python tarafında)
+            # "Ali Veli" -> First: Ali, Last: Veli
+            name_parts = full_name.split(' ', 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+            # INSERT sorgusu güncellendi (name yok, first/last var)
+            insert_sql = """
+                INSERT INTO players (player_id, first_name, last_name, position, market_value_in_eur, current_club_id) 
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
             
             with get_db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute(insert_sql, (player_id, name, position, market_value, current_club_id))
+                    cursor.execute(insert_sql, (player_id, first_name, last_name, position, market_value, current_club_id))
                 conn.commit()
             return redirect(url_for('players'))
         except Exception as e:
             return handle_exception(e)
 
-    # --- GET: LİSTELEME VE GELİŞMİŞ ANALİZ ---
+    # --- GET: LİSTELEME ---
     players_data = []
     clubs_data = []
     advanced_stats = []
 
-    # GELİŞMİŞ ANALİZ SORĞUSU (Rubric Gereksinimleri)
-    # 4 Tablo: players, clubs, competitions, transfers [Complex Join]
-    # LEFT JOIN kullanıldı [Outer Join]
-    # İç sorgu ile ortalama piyasa değeri hesaplandı [Nested Query]
-    # Oyuncu başına transfer sayısı hesaplandı [Group By]
+    # GELİŞMİŞ ANALİZ (3NF Uyumlu)
     advanced_sql = """
     SELECT 
-        p.player_id,  -- Bu sütunu ekledik
-        p.name AS player_name, 
+        p.player_id,
+        CONCAT(p.first_name, ' ', p.last_name) AS player_name, -- İsim birleştirme
         p.position, 
         c.name AS club_name, 
         comp.name AS league_name,
@@ -573,35 +571,32 @@ def players():
         COUNT(t.transfer_id) AS total_transfers
     FROM players p
     LEFT JOIN clubs c ON p.current_club_id = c.club_id
-    LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id
+    LEFT JOIN competitions comp ON c.domestic_competition_id = comp.competition_id -- Artık kulüp üzerinden çekiyoruz
     LEFT JOIN transfers t ON p.player_id = t.player_id
     WHERE p.market_value_in_eur > (
-        SELECT AVG(market_value_in_eur) 
-        FROM players 
-        WHERE market_value_in_eur > 0
+        SELECT AVG(market_value_in_eur) FROM players WHERE market_value_in_eur > 0
     )
-    GROUP BY p.player_id, p.name, p.position, c.name, comp.name, p.market_value_in_eur
+    GROUP BY p.player_id, p.first_name, p.last_name, p.position, c.name, comp.name, p.market_value_in_eur
     ORDER BY p.market_value_in_eur DESC 
     LIMIT 10
-"""
+    """
 
     try:
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                # 1. Dropdown için kulüpler
                 cursor.execute("SELECT club_id, name FROM clubs ORDER BY name ASC LIMIT 600")
                 clubs_data = cursor.fetchall()
                 
-                # 2. Standart Oyuncu Listesi
+                # Standart Liste Sorgusu (3NF Uyumlu)
                 cursor.execute("""
-                    SELECT p.player_id, p.name, p.position, p.market_value_in_eur, p.current_club_id, c.name AS club_name
+                    SELECT p.player_id, CONCAT(p.first_name, ' ', p.last_name) AS name, 
+                           p.position, p.market_value_in_eur, p.current_club_id, c.name AS club_name
                     FROM players p
                     LEFT JOIN clubs c ON p.current_club_id = c.club_id
                     ORDER BY p.market_value_in_eur DESC LIMIT 100
                 """)
                 players_data = cursor.fetchall()
 
-                # 3. Gelişmiş Analiz Verisi (Hocanın istediği yer)
                 cursor.execute(advanced_sql)
                 advanced_stats = cursor.fetchall()
                 
@@ -614,22 +609,11 @@ def players():
                            advanced_stats=advanced_stats, 
                            current_page="players")
 
-@app.route('/players/delete/<int:player_id>', methods=['POST'])
-def delete_player(player_id):
-    try:
-        with get_db_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute("DELETE FROM players WHERE player_id = %s", (player_id,))
-            conn.commit()
-        return redirect(url_for('players'))
-    except Exception as e:
-        return handle_exception(e)
-
 @app.route('/players/update', methods=['POST'])
 def update_player():
     try:
         player_id = int(request.form['player_id'])
-        name = request.form['name']
+        full_name = request.form['name'].strip()
         position = request.form['position']
         
         market_val_input = request.form.get('market_value_in_eur', 0)
@@ -638,13 +622,20 @@ def update_player():
         club_id_val = request.form.get('current_club_id')
         current_club_id = int(club_id_val) if club_id_val else None
         
+        # İsim Parçalama (Update için)
+        name_parts = full_name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+
+        # UPDATE sorgusu (first_name ve last_name güncellenir)
         update_sql = """
-            UPDATE players SET name=%s, position=%s, market_value_in_eur=%s, current_club_id=%s
+            UPDATE players 
+            SET first_name=%s, last_name=%s, position=%s, market_value_in_eur=%s, current_club_id=%s
             WHERE player_id=%s
         """
         with get_db_connection() as conn:
             with conn.cursor() as cursor:
-                cursor.execute(update_sql, (name, position, market_value, current_club_id, player_id))
+                cursor.execute(update_sql, (first_name, last_name, position, market_value, current_club_id, player_id))
             conn.commit()
         return redirect(url_for('players'))
     except Exception as e:
@@ -653,10 +644,11 @@ def update_player():
 @app.route('/players/<int:player_id>')
 def player_page(player_id):
     try:
-        # SELECT * FROM players WHERE player_id = player_id
-        # Ayrıca kulüp bilgisini de JOIN ile çekiyoruz
+        # Tek Oyuncu Sayfası (Alias kullanarak 'name' oluşturuyoruz ki HTML bozulmasın)
         select_sql = """
-            SELECT p.*, c.name AS club_name, c.stadium_name AS club_stadium
+            SELECT p.*, 
+                   CONCAT(p.first_name, ' ', p.last_name) AS name,
+                   c.name AS club_name, c.stadium_name AS club_stadium
             FROM players p
             LEFT JOIN clubs c ON p.current_club_id = c.club_id
             WHERE p.player_id = %s
@@ -672,6 +664,17 @@ def player_page(player_id):
                     return f"<h1>Oyuncu Bulunamadı</h1><p>Player ID: {player_id} bulunamadı.</p>", 404
         
         return render_template('player.html', player=player, current_page="players")
+    except Exception as e:
+        return handle_exception(e)
+
+@app.route('/players/delete/<int:player_id>', methods=['POST'])
+def delete_player(player_id):
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("DELETE FROM players WHERE player_id = %s", (player_id,))
+            conn.commit()
+        return redirect(url_for('players'))
     except Exception as e:
         return handle_exception(e)
 
