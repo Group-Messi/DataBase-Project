@@ -362,15 +362,20 @@ def transfers():
                 params = []
                 
                 if player_search:
-                    # DEĞİŞTİ: İsim veya Soyisimde arama yap
-                    where_clause = "WHERE (p.first_name LIKE %s OR p.last_name LIKE %s)"
+                    # NULL kontrolü ile arama: first_name, last_name veya birleştirilmiş isim üzerinden
+                    # COALESCE ile NULL değerleri boş string'e çeviriyoruz
+                    where_clause = """WHERE (
+                        COALESCE(p.first_name, '') LIKE %s OR 
+                        COALESCE(p.last_name, '') LIKE %s OR 
+                        CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, '')) LIKE %s
+                    )"""
                     search_pattern = f"%{player_search}%"
-                    params = [search_pattern, search_pattern]
+                    params = [search_pattern, search_pattern, search_pattern]
 
                 # DEĞİŞTİ: p.name yerine CONCAT
                 select_sql = f"""
                     SELECT t.*, 
-                           CONCAT(p.first_name, ' ', p.last_name) AS player_full_name, 
+                           CONCAT(COALESCE(p.first_name, ''), ' ', COALESCE(p.last_name, '')) AS player_full_name, 
                            cf.name AS from_club_name, 
                            ct.name AS to_club_name
                     FROM transfers t
