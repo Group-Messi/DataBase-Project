@@ -50,7 +50,7 @@ CREATE TABLE clubs (
     foreigners_percentage FLOAT,
     national_team_players INT,
     stadium_name VARCHAR(150),
-    stadium_seats INT, -- SİLİNECEK
+    stadium_seats INT,
     net_transfer_record VARCHAR(50),
     coach_name VARCHAR(100),
     last_season INT,
@@ -59,7 +59,7 @@ CREATE TABLE clubs (
     FOREIGN KEY (domestic_competition_id) REFERENCES competitions(competition_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
--- 4. PLAYERS
+-- 4. PLAYERS (DÜZELTİLDİ: SİLİNECEK SÜTUNA FOREIGN KEY VERMEDİK)
 CREATE TABLE players (
     player_id INT PRIMARY KEY,
     first_name VARCHAR(100),
@@ -69,7 +69,7 @@ CREATE TABLE players (
     current_club_id INT,
     player_code VARCHAR(100),
     country_of_birth VARCHAR(100),
-    city_of_birth VARCHAR(100), -- SİLİNECEK
+    city_of_birth VARCHAR(100),
     country_of_citizenship VARCHAR(100),
     date_of_birth DATE,
     sub_position VARCHAR(100),
@@ -79,11 +79,11 @@ CREATE TABLE players (
     contract_expiration_date VARCHAR(50),
     image_url TEXT,
     url TEXT,
-    current_club_domestic_competition_id VARCHAR(10),
+    current_club_domestic_competition_id VARCHAR(10), -- FK KALDIRILDI (Çünkü silinecek)
     current_club_name VARCHAR(150),
     market_value_in_eur FLOAT,
     highest_market_value_in_eur FLOAT,
-    FOREIGN KEY (current_club_domestic_competition_id) REFERENCES competitions(competition_id) ON UPDATE CASCADE ON DELETE SET NULL,
+    -- current_club_domestic_competition_id İÇİN OLAN FK SATIRINI SİLDİM --
     FOREIGN KEY (current_club_id) REFERENCES clubs(club_id) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
@@ -124,12 +124,12 @@ CREATE TABLE games (
 ) ENGINE=InnoDB;
 
 -- ========================================================
--- DATA YÜKLEME (DÜZELTİLDİ)
+-- DATA YÜKLEME
 -- ========================================================
 
 LOAD DATA LOCAL INFILE 'datas/countries.csv' INTO TABLE countries FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n' IGNORE 1 ROWS (country_id, country_name, iso_code, confederation, latitude, longitude);
 
-
+-- Competitions için "True" -> 1 dönüşümü
 LOAD DATA LOCAL INFILE 'datas/competitions.csv' 
 INTO TABLE competitions 
 FIELDS TERMINATED BY ',' 
@@ -154,6 +154,7 @@ LOAD DATA LOCAL INFILE 'datas/games.csv' INTO TABLE games FIELDS TERMINATED BY '
 -- ========================================================
 
 -- 1. PLAYERS TABLOSU
+-- Artık FK olmadığı için bu satır hata vermeyecek.
 ALTER TABLE players
 DROP COLUMN current_club_name,
 DROP COLUMN current_club_domestic_competition_id,
@@ -175,11 +176,3 @@ DROP COLUMN stadium_seats;
 
 -- 4. CLUB_GAMES
 ALTER TABLE club_games ADD PRIMARY KEY (game_id, club_id);
-
-
--- ÇALIŞTIRMA
--- 1 - CMD AÇIN
--- 2 - projenin root folder'ına geçin (örn: cd "C:\users\alperen\desktop\databaseprojesi")
--- 3 - mysql client çalıştırın ( mysql -u -root -p --local-infile=1 ) (mysql --local-infile=1 -u root -pŞİFRENİBURAYAGİR)
--- 3.not (şifreniz genelde 'root' olur)
--- 4 - bu sql scriptini çalıştırın ( SOURCE database/loader.sql; )
